@@ -2,10 +2,10 @@
 
 ## 📦 Submission Package
 
-**Dosya:** `nanocap-v0.3.0-chrome-store-final.zip`  
-**Boyut:** 36 KB  
+**Dosya:** `nanocap-v0.3.0-chrome-store-with-icons.zip`  
+**Boyut:** 38 KB  
 **Sürüm:** 0.3.0  
-**Durum:** Chrome Web Store'a yüklenmeye hazır
+**Durum:** Chrome Web Store'a yüklenmeye hazır (Icon dosyaları dahil)
 
 ## 🎯 Store Listing Bilgileri
 

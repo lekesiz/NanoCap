@@ -1,6 +1,6 @@
 {
   "name": "nanocap",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Ultra-low filesize browser recording extension for Chrome",
   "main": "sw.js",
   "scripts": {

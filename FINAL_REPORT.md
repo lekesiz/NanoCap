@@ -7,8 +7,8 @@
 ## 📊 Proje Özeti
 
 **Proje Adı:** NanoCap  
-**Sürüm:** 0.2.0  
-**Durum:** ✅ Tamamlandı ve GitHub'da Yayında  
+**Sürüm:** 0.3.0  
+**Durum:** ✅ Tamamlandı ve Chrome Web Store'a Hazır  
 **Repository:** https://github.com/lekesiz/NanoCap.git  
 **Lisans:** MIT  
 

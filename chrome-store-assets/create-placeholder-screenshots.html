@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NanoCap Screenshots Generator</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        canvas { display: none; }
+        .info { padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>NanoCap Screenshot Placeholder Generator</h1>
+        <p>This page generates placeholder screenshots for Chrome Web Store submission.</p>
+        <p>For production, you should create actual screenshots of the extension in action.</p>
+        <button onclick="downloadAll()">Download All Screenshots</button>
+    </div>
+    
+    <canvas id="canvas" width="1280" height="800"></canvas>
+    
+    <script>
+        const screenshots = [
+            {
+                name: 'screenshot-1.png',
+                title: 'Main Interface',
+                subtitle: 'Simple one-click recording',
+                features: ['Quality presets', 'Audio options', 'Size estimates', 'Easy controls']
+            },
+            {
+                name: 'screenshot-2.png',
+                title: 'Recording Active',
+                subtitle: 'Real-time status and timer',
+                features: ['Live timer', 'Recording indicator', 'Stop button', 'CPU usage']
+            },
+            {
+                name: 'screenshot-3.png',
+                title: 'Ultra Compression',
+                subtitle: 'Files 80% smaller',
+                features: ['VP9 codec', '1-5 MB/minute', 'No quality loss', 'Fast processing']
+            },
+            {
+                name: 'screenshot-4.png',
+                title: 'Privacy First',
+                subtitle: '100% local processing',
+                features: ['No data collection', 'No uploads', 'Open source', 'Secure']
+            },
+            {
+                name: 'screenshot-5.png',
+                title: 'Advanced Features',
+                subtitle: 'Professional recording tools',
+                features: ['Microphone mixing', 'AV1 codec ready', 'Auto-split', 'File system API']
+            }
+        ];
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function createScreenshot(config, index) {
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 800);
+            gradient.addColorStop(0, '#1a1a1a');
+            gradient.addColorStop(1, '#2d2d2d');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1280, 800);
+            
+            // Add pattern
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+            for (let i = 0; i < 20; i++) {
+                for (let j = 0; j < 20; j++) {
+                    if ((i + j) % 2 === 0) {
+                        ctx.fillRect(i * 64, j * 40, 64, 40);
+                    }
+                }
+            }
+            
+            // Title
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 72px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(config.title, 640, 200);
+            
+            // Subtitle
+            ctx.fillStyle = '#ff3333';
+            ctx.font = '36px -apple-system, sans-serif';
+            ctx.fillText(config.subtitle, 640, 280);
+            
+            // Features
+            ctx.fillStyle = '#cccccc';
+            ctx.font = '28px -apple-system, sans-serif';
+            config.features.forEach((feature, i) => {
+                ctx.fillText(`✓ ${feature}`, 640, 400 + i * 60);
+            });
+            
+            // Logo
+            ctx.fillStyle = '#ff3333';
+            ctx.font = 'bold 48px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('🎥 NanoCap', 50, 750);
+            
+            // Version
+            ctx.fillStyle = '#888888';
+            ctx.font = '24px -apple-system, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('v0.3.0', 1230, 750);
+            
+            return canvas.toDataURL('image/png');
+        }
+        
+        function downloadScreenshot(dataUrl, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = dataUrl;
+            link.click();
+        }
+        
+        function downloadAll() {
+            screenshots.forEach((config, index) => {
+                const dataUrl = createScreenshot(config, index);
+                setTimeout(() => {
+                    downloadScreenshot(dataUrl, config.name);
+                }, index * 500);
+            });
+        }
+        
+        // Auto-generate on load
+        window.onload = () => {
+            console.log('Screenshots ready to download');
+        };
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
   "name": "NanoCap",
-  "description": "Ultra-low filesize browser recording with advanced compression (VP9/AV1, FFmpeg.wasm, microphone mixing)",
+  "description": "Ultra-low size screen recorder. Create recordings 80% smaller than others. VP9/AV1, no watermarks, 100% private.",
   "version": "0.3.0",
   "manifest_version": 3,
   "permissions": [
