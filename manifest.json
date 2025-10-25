@@ -32,7 +32,8 @@
         "av1-codec-processor.js",
         "advanced-audio-processor.js",
         "file-system-recorder.js",
-        "ffmpeg-processor.js"
+        "ffmpeg-processor.js",
+        "auto-split-recorder.js"
       ],
       "matches": ["<all_urls>"]
     }
