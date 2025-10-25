@@ -1,0 +1,46 @@
+# Node/npm
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Temp
+temp/
+tmp/
+
+# Chrome Extension specific
+*.pem
+*.crx
+*.zip
+
+# FFmpeg.wasm cache
+ffmpeg-core/
+ffmpeg-core.wasm
+ffmpeg-core.worker.js
+ffmpeg-core.worker.js.map
+ffmpeg-core.wasm.map
+
+# Test recordings
+test-recordings/
+*.webm
+*.mp4
+*.wav

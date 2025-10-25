@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NanoCap - Tarayıcı Kaydedicisi</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>🎥 NanoCap</h1>
+                <p class="tagline">Ultra düşük boyutlu kayıt</p>
+            </div>
+        </header>
+
+        <!-- Recording Status -->
+        <div class="status-section">
+            <div id="recording-status" class="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Hazır</span>
+            </div>
+            <div id="recording-timer" class="timer hidden">00:00</div>
+        </div>
+
+        <!-- Quality Settings -->
+        <div class="settings-section">
+            <label class="setting-label">
+                <span>Kalite:</span>
+                <select id="quality-select">
+                    <option value="ultra-low">Ultra Düşük (En küçük)</option>
+                    <option value="low">Düşük</option>
+                    <option value="balanced" selected>Dengeli</option>
+                    <option value="high">Yüksek</option>
+                </select>
+            </label>
+
+            <label class="setting-label">
+                <span>Ses:</span>
+                <input type="checkbox" id="audio-toggle" checked>
+            </label>
+
+            <label class="setting-label">
+                <span>Video:</span>
+                <input type="checkbox" id="video-toggle" checked>
+            </label>
+
+            <label class="setting-label">
+                <span>FFmpeg Sıkıştırma:</span>
+                <input type="checkbox" id="ffmpeg-toggle" checked>
+            </label>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="controls-section">
+            <button id="start-btn" class="btn btn-primary">
+                <span class="btn-icon">🔴</span>
+                Kaydı Başlat
+            </button>
+            
+            <button id="stop-btn" class="btn btn-secondary hidden">
+                <span class="btn-icon">⏹️</span>
+                Kaydı Durdur
+            </button>
+        </div>
+
+        <!-- File Size Estimation -->
+        <div class="info-section">
+            <div class="file-info">
+                <span class="info-label">Tahmini Boyut:</span>
+                <span id="size-estimate">~2-5 MB/dakika</span>
+            </div>
+            <div class="compression-info">
+                <span class="info-label">Sıkıştırma:</span>
+                <span id="compression-ratio">VP9 + Opus</span>
+            </div>
+        </div>
+
+        <!-- Recent Recordings -->
+        <div class="recent-section">
+            <h3>Son Kayıtlar</h3>
+            <div id="recent-list" class="recent-list">
+                <div class="no-recordings">Henüz kayıt yok</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="version">v0.2.0</div>
+            <div class="links">
+                <a href="#" id="settings-link">⚙️</a>
+                <a href="#" id="help-link">❓</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

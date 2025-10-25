@@ -1,0 +1,30 @@
+{
+  "name": "NanoCap",
+  "description": "Ultra düşük boyutlu tarayıcı video+ses kaydedici (MV3)",
+  "version": "0.2.0",
+  "manifest_version": 3,
+  "permissions": [
+    "offscreen",
+    "tabCapture",
+    "downloads",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "NanoCap - Tarayıcı Kaydedicisi"
+  },
+  "background": {
+    "service_worker": "sw.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  }
+}
