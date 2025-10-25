@@ -59,6 +59,26 @@
                 <span>🔊 Ses Aynalama:</span>
                 <input type="checkbox" id="mirror-toggle" checked>
             </label>
+            <label class="setting-label">
+                <span>🎤 Mikrofon Karışımı:</span>
+                <input type="checkbox" id="mic-mix-toggle">
+            </label>
+            <div id="mic-controls" class="mic-controls hidden">
+                <label class="setting-label">
+                    <span>🎤 Mikrofon Seviyesi:</span>
+                    <input type="range" id="mic-volume" min="0" max="2" step="0.1" value="1">
+                    <span id="mic-volume-display">100%</span>
+                </label>
+                <label class="setting-label">
+                    <span>🔊 Tab Ses Seviyesi:</span>
+                    <input type="range" id="tab-volume" min="0" max="2" step="0.1" value="1">
+                    <span id="tab-volume-display">100%</span>
+                </label>
+                <label class="setting-label">
+                    <span>🔇 Gürültü Azaltma:</span>
+                    <input type="checkbox" id="noise-reduction-toggle">
+                </label>
+            </div>
         </div>
 
         <!-- Control Buttons -->
@@ -95,6 +115,35 @@
             <div class="compression-info">
                 <span class="info-label">⚡ CPU Kullanımı:</span>
                 <span id="cpu-estimate" class="info-value">~10-15%</span>
+            </div>
+            <div class="compression-info">
+                <span class="info-label">🎬 Codec:</span>
+                <span id="codec-info" class="info-value">VP9 (AV1 hazır)</span>
+            </div>
+        </div>
+
+        <!-- Audio Level Visualization -->
+        <div id="audio-levels" class="audio-levels hidden">
+            <h4>🎵 Ses Seviyeleri</h4>
+            <div class="level-bars">
+                <div class="level-bar">
+                    <span class="level-label">🎤 Mikrofon:</span>
+                    <div class="level-meter">
+                        <div id="mic-level" class="level-fill"></div>
+                    </div>
+                </div>
+                <div class="level-bar">
+                    <span class="level-label">🔊 Tab Ses:</span>
+                    <div class="level-meter">
+                        <div id="tab-level" class="level-fill"></div>
+                    </div>
+                </div>
+                <div class="level-bar">
+                    <span class="level-label">🎵 Karışık:</span>
+                    <div class="level-meter">
+                        <div id="mixed-level" class="level-fill"></div>
+                    </div>
+                </div>
             </div>
         </div>
 

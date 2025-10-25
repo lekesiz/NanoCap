@@ -1,7 +1,7 @@
 {
   "name": "NanoCap",
-  "description": "Ultra düşük boyutlu tarayıcı video+ses kaydedici (MV3)",
-  "version": "0.2.0",
+  "description": "Ultra-low filesize browser recording with advanced compression (VP9/AV1, FFmpeg.wasm, microphone mixing)",
+  "version": "0.3.0",
   "manifest_version": 3,
   "permissions": [
     "offscreen",
@@ -16,12 +16,27 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "NanoCap - Tarayıcı Kaydedicisi"
+    "default_title": "NanoCap - Ultra Low Size Recorder"
   },
   "background": {
     "service_worker": "sw.js",
     "type": "module"
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "advanced-ffmpeg-processor.js",
+        "av1-codec-processor.js",
+        "advanced-audio-processor.js",
+        "file-system-recorder.js",
+        "ffmpeg-processor.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "icons": {
     "16": "images/icon-16.png",
     "48": "images/icon-48.png",

@@ -22,8 +22,11 @@ const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 
 // Recording state
-let isRecording = false;
-let recordingStartTime = null;
+// Advanced features integration
+let advancedFFmpegProcessor = null;
+let av1CodecProcessor = null;
+let advancedAudioProcessor = null;
+let audioLevelInterval = null;
 let timerInterval = null;
 
 // Quality presets with file size estimates
@@ -71,8 +74,11 @@ const qualityPresets = {
 };
 
 // Initialize popup
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('Popup DOM loaded');
+  
+  // Initialize advanced features
+  await initializeAdvancedFeatures();
   
   // Load saved settings
   loadSettings();
@@ -97,6 +103,28 @@ function setupEventListeners() {
   videoToggle.addEventListener('change', updateQualityInfo);
   ffmpegToggle.addEventListener('change', updateQualityInfo);
   mirrorToggle.addEventListener('change', updateQualityInfo);
+  
+  // Advanced features event listeners
+  const micMixToggle = document.getElementById('mic-mix-toggle');
+  const micVolume = document.getElementById('mic-volume');
+  const tabVolume = document.getElementById('tab-volume');
+  const noiseReductionToggle = document.getElementById('noise-reduction-toggle');
+  
+  if (micMixToggle) {
+    micMixToggle.addEventListener('change', handleMicMixToggle);
+  }
+  
+  if (micVolume) {
+    micVolume.addEventListener('input', handleMicVolumeChange);
+  }
+  
+  if (tabVolume) {
+    tabVolume.addEventListener('input', handleTabVolumeChange);
+  }
+  
+  if (noiseReductionToggle) {
+    noiseReductionToggle.addEventListener('change', handleNoiseReductionToggle);
+  }
   
   // Settings and help links
   document.getElementById('settings-link').addEventListener('click', openSettings);
