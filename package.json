@@ -1,0 +1,143 @@
+{
+  "name": "nanocap",
+  "version": "0.2.0",
+  "description": "Ultra-low filesize browser recording extension for Chrome",
+  "main": "sw.js",
+  "scripts": {
+    "dev": "npm run build:dev && npm run watch",
+    "build": "npm run build:prod",
+    "build:dev": "npm run clean && npm run copy:dev && npm run lint",
+    "build:prod": "npm run clean && npm run copy:prod && npm run lint && npm run minify",
+    "clean": "rimraf dist",
+    "copy:dev": "npm run copy:files && npm run copy:assets",
+    "copy:prod": "npm run copy:files && npm run copy:assets",
+    "copy:files": "cpx \"{manifest.json,sw.js,popup.html,popup.js,popup.css,offscreen.html,offscreen.js,performance-monitor.js,file-system-recorder.js,ffmpeg-processor.js}\" dist/",
+    "copy:assets": "cpx \"store-assets/**/*\" dist/store-assets/ && cpx \"docs/**/*\" dist/docs/",
+    "minify": "npm run minify:js && npm run minify:css",
+    "minify:js": "terser dist/*.js -o dist/sw.min.js -o dist/popup.min.js -o dist/offscreen.min.js",
+    "minify:css": "cleancss -o dist/popup.min.css dist/popup.css",
+    "watch": "npm run watch:files",
+    "watch:files": "chokidar \"{manifest.json,sw.js,popup.html,popup.js,popup.css,offscreen.html,offscreen.js}\" -c \"npm run build:dev\"",
+    "lint": "eslint *.js docs/**/*.js --fix",
+    "lint:check": "eslint *.js docs/**/*.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "package": "npm run build:prod && npm run package:zip",
+    "package:zip": "cd dist && zip -r ../nanocap-v0.2.0.zip .",
+    "package:store": "npm run build:prod && npm run package:store:zip",
+    "package:store:zip": "cd dist && zip -r ../nanocap-store-package.zip .",
+    "release": "npm run test && npm run build:prod && npm run package:store",
+    "release:notes": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "version": "npm run release:notes && git add CHANGELOG.md",
+    "postversion": "git push && git push --tags",
+    "prepare": "husky install",
+    "precommit": "lint-staged",
+    "prepush": "npm run test && npm run lint:check"
+  },
+  "keywords": [
+    "chrome-extension",
+    "screen-recording",
+    "video-compression",
+    "vp9",
+    "opus",
+    "ffmpeg",
+    "webm",
+    "mp4",
+    "browser-recording",
+    "low-file-size"
+  ],
+  "author": {
+    "name": "Mikail Lekesiz",
+    "email": "mikail@example.com",
+    "url": "https://github.com/lekesiz"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lekesiz/NanoCap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lekesiz/NanoCap/issues"
+  },
+  "homepage": "https://github.com/lekesiz/NanoCap#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "chokidar-cli": "^3.0.0",
+    "clean-css-cli": "^5.6.2",
+    "conventional-changelog-cli": "^2.2.2",
+    "cpx": "^1.5.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
+    "jest": "^29.6.0",
+    "jest-environment-jsdom": "^29.6.0",
+    "lint-staged": "^13.2.3",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "terser": "^5.19.0"
+  },
+  "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.7",
+    "@ffmpeg/util": "^0.12.1"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "*.js",
+      "!node_modules/**",
+      "!tests/**",
+      "!dist/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  },
+  "browserslist": [
+    "Chrome >= 110",
+    "Edge >= 110",
+    "Brave >= 1.50"
+  ],
+  "chrome": {
+    "extension": {
+      "id": "nanocap-ultra-low-size-recorder",
+      "name": "NanoCap",
+      "version": "0.2.0",
+      "description": "Ultra-low filesize browser recording extension",
+      "permissions": [
+        "offscreen",
+        "tabCapture",
+        "downloads",
+        "storage",
+        "activeTab",
+        "scripting"
+      ],
+      "host_permissions": [
+        "<all_urls>"
+      ]
+    }
+  }
+}
