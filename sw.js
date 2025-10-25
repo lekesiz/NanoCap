@@ -25,7 +25,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   switch (message.type) {
     case 'START_RECORDING':
-      handleStartRecording(message.data);
+      handleStartRecording(message.data).then(() => {
+        sendResponse({ success: true });
+      }).catch(error => {
+        sendResponse({ success: false, error: error.message });
+      });
       break;
     case 'STOP_RECORDING':
       handleStopRecording();
@@ -187,7 +191,11 @@ chrome.runtime.onSuspend.addListener(() => {
   }
   
   // Clean up offscreen document
-  chrome.offscreen.closeDocument();
+  if (recordingState.offscreenCreated) {
+    chrome.offscreen.closeDocument().catch(error => {
+      console.log('Offscreen document already closed or error:', error);
+    });
+  }
 });
 
 console.log('NanoCap Service Worker ready');

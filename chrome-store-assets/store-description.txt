@@ -1,0 +1,74 @@
+🎥 NanoCap - Ultra-Low Size Screen Recorder
+
+Record your browser with the smallest file sizes possible! NanoCap uses advanced compression to create recordings that are up to 80% smaller than standard screen recorders.
+
+⭐ KEY FEATURES:
+✅ Ultra-compact recordings (1-5 MB/minute)
+✅ High-quality VP9/Opus compression
+✅ Record tab, window, or full screen
+✅ Audio recording with microphone mixing
+✅ No watermarks, no time limits
+✅ 100% private - all processing happens locally
+
+📊 SMART COMPRESSION:
+• 4 quality presets optimized for different needs
+• Real-time size estimates before recording
+• Advanced VP9 codec with Opus audio
+• AV1 codec support for even smaller files
+
+🔒 PRIVACY FIRST:
+• No data collection or tracking
+• No server uploads - everything stays on your device
+• No account required
+• Open source and transparent
+
+💡 PERFECT FOR:
+• Recording tutorials and demos
+• Capturing meetings and presentations
+• Creating bug reports
+• Saving streaming content
+• Making quick screen captures
+
+🚀 EASY TO USE:
+1. Click the NanoCap icon
+2. Choose your quality preset
+3. Select what to record
+4. Click Start!
+
+📈 QUALITY OPTIONS:
+• Ultra Low: 1-2 MB/min (perfect for long recordings)
+• Low: 2-4 MB/min (great for tutorials)
+• Balanced: 4-8 MB/min (ideal for presentations)
+• High: 8-15 MB/min (best for detailed content)
+
+🛠️ TECHNICAL FEATURES:
+• Manifest V3 compliant
+• Hardware acceleration support
+• Efficient memory usage
+• Chrome 110+ compatible
+
+⚡ PERFORMANCE:
+• Low CPU usage (5-25%)
+• Minimal memory footprint
+• No impact on browser performance
+• Instant start/stop
+
+📝 SUPPORTED FORMATS:
+• WebM with VP9/Opus (default)
+• MP4 with H.264/AAC (Chrome 126+)
+• Audio-only recording option
+
+🎯 WHY NANOCAP?
+Other recorders create huge files that fill up your disk. NanoCap's innovative compression creates files 3-5x smaller while maintaining excellent quality. Perfect for users with limited storage or bandwidth.
+
+💬 SUPPORT:
+• GitHub: https://github.com/lekesiz/NanoCap
+• Documentation included
+• Active development
+
+🏆 OPEN SOURCE:
+NanoCap is fully open source. Review the code, contribute features, or customize for your needs.
+
+---
+
+Version 0.3.0 - Continuously improved based on user feedback

@@ -22,6 +22,9 @@ const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 
 // Recording state
+let isRecording = false;
+let recordingStartTime = null;
+
 // Advanced features integration
 let advancedFFmpegProcessor = null;
 let av1CodecProcessor = null;
@@ -72,6 +75,12 @@ const qualityPresets = {
     maxFps: 30
   }
 };
+
+// Initialize advanced features
+async function initializeAdvancedFeatures() {
+  console.log('Initializing advanced features...');
+  // This function can be expanded later to initialize advanced processors
+}
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
@@ -404,5 +413,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
   }
 });
+
+// Advanced features handlers
+function handleMicMixToggle(event) {
+  console.log('Mic mix toggled:', event.target.checked);
+  const micControls = document.getElementById('mic-controls');
+  if (micControls) {
+    micControls.style.display = event.target.checked ? 'block' : 'none';
+  }
+}
+
+function handleMicVolumeChange(event) {
+  console.log('Mic volume changed:', event.target.value);
+}
+
+function handleTabVolumeChange(event) {
+  console.log('Tab volume changed:', event.target.value);
+}
+
+function handleNoiseReductionToggle(event) {
+  console.log('Noise reduction toggled:', event.target.checked);
+}
 
 console.log('NanoCap Popup ready');
