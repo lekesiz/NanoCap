@@ -10,6 +10,7 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
+            <div class="version-badge">v0.2.0</div>
             <div class="logo">
                 <h1>🎥 NanoCap</h1>
                 <p class="tagline">Ultra düşük boyutlu kayıt</p>
@@ -27,8 +28,10 @@
 
         <!-- Quality Settings -->
         <div class="settings-section">
+            <h3 class="settings-title">Kayıt Ayarları</h3>
+            
             <label class="setting-label">
-                <span>Kalite:</span>
+                <span>📊 Kalite Ön Ayarı:</span>
                 <select id="quality-select">
                     <option value="ultra-low">Ultra Düşük (En küçük)</option>
                     <option value="low">Düşük</option>
@@ -38,18 +41,23 @@
             </label>
 
             <label class="setting-label">
-                <span>Ses:</span>
+                <span>🎵 Ses Kaydı:</span>
                 <input type="checkbox" id="audio-toggle" checked>
             </label>
 
             <label class="setting-label">
-                <span>Video:</span>
+                <span>📹 Video Kaydı:</span>
                 <input type="checkbox" id="video-toggle" checked>
             </label>
 
             <label class="setting-label">
-                <span>FFmpeg Sıkıştırma:</span>
+                <span>⚡ Gelişmiş Sıkıştırma:</span>
                 <input type="checkbox" id="ffmpeg-toggle" checked>
+            </label>
+
+            <label class="setting-label">
+                <span>🔊 Ses Aynalama:</span>
+                <input type="checkbox" id="mirror-toggle" checked>
             </label>
         </div>
 
@@ -66,15 +74,27 @@
             </button>
         </div>
 
+        <!-- Progress Bar (Hidden by default) -->
+        <div id="progress-container" class="progress-container hidden">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <div id="progress-text" class="progress-text">İşleniyor...</div>
+        </div>
+
         <!-- File Size Estimation -->
         <div class="info-section">
             <div class="file-info">
-                <span class="info-label">Tahmini Boyut:</span>
-                <span id="size-estimate">~2-5 MB/dakika</span>
+                <span class="info-label">📏 Tahmini Boyut:</span>
+                <span id="size-estimate" class="info-value">~2-5 MB/dakika</span>
             </div>
             <div class="compression-info">
-                <span class="info-label">Sıkıştırma:</span>
-                <span id="compression-ratio">VP9 + Opus</span>
+                <span class="info-label">🗜️ Sıkıştırma:</span>
+                <span id="compression-ratio" class="info-value">VP9 + Opus</span>
+            </div>
+            <div class="compression-info">
+                <span class="info-label">⚡ CPU Kullanımı:</span>
+                <span id="cpu-estimate" class="info-value">~10-15%</span>
             </div>
         </div>
 
@@ -88,10 +108,11 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <div class="version">v0.2.0</div>
+            <div class="version">NanoCap v0.2.0</div>
             <div class="links">
-                <a href="#" id="settings-link">⚙️</a>
-                <a href="#" id="help-link">❓</a>
+                <a href="#" id="settings-link" title="Ayarlar">⚙️</a>
+                <a href="#" id="help-link" title="Yardım">❓</a>
+                <a href="#" id="github-link" title="GitHub">🐙</a>
             </div>
         </footer>
     </div>

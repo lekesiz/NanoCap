@@ -12,9 +12,14 @@ const qualitySelect = document.getElementById('quality-select');
 const audioToggle = document.getElementById('audio-toggle');
 const videoToggle = document.getElementById('video-toggle');
 const ffmpegToggle = document.getElementById('ffmpeg-toggle');
+const mirrorToggle = document.getElementById('mirror-toggle');
 const sizeEstimate = document.getElementById('size-estimate');
 const compressionRatio = document.getElementById('compression-ratio');
+const cpuEstimate = document.getElementById('cpu-estimate');
 const recentList = document.getElementById('recent-list');
+const progressContainer = document.getElementById('progress-container');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
 
 // Recording state
 let isRecording = false;
@@ -28,28 +33,40 @@ const qualityPresets = {
     videoBitsPerSecond: 500000, // 500 kbps
     audioBitsPerSecond: 32000,  // 32 kbps
     sizePerMinute: '1-2 MB',
-    compression: 'VP9 + Opus (CRF 35)'
+    compression: 'VP9 + Opus (CRF 35)',
+    cpuUsage: '~5-8%',
+    maxWidth: 1280,
+    maxFps: 15
   },
   'low': {
     name: 'Düşük',
     videoBitsPerSecond: 1000000, // 1 Mbps
     audioBitsPerSecond: 64000,   // 64 kbps
     sizePerMinute: '2-4 MB',
-    compression: 'VP9 + Opus (CRF 30)'
+    compression: 'VP9 + Opus (CRF 30)',
+    cpuUsage: '~8-12%',
+    maxWidth: 1280,
+    maxFps: 20
   },
   'balanced': {
     name: 'Dengeli',
     videoBitsPerSecond: 2000000, // 2 Mbps
     audioBitsPerSecond: 128000,  // 128 kbps
     sizePerMinute: '4-8 MB',
-    compression: 'VP9 + Opus (CRF 25)'
+    compression: 'VP9 + Opus (CRF 25)',
+    cpuUsage: '~10-15%',
+    maxWidth: 1280,
+    maxFps: 24
   },
   'high': {
     name: 'Yüksek',
     videoBitsPerSecond: 4000000, // 4 Mbps
     audioBitsPerSecond: 192000,  // 192 kbps
     sizePerMinute: '8-15 MB',
-    compression: 'VP9 + Opus (CRF 20)'
+    compression: 'VP9 + Opus (CRF 20)',
+    cpuUsage: '~15-25%',
+    maxWidth: 1920,
+    maxFps: 30
   }
 };
 
@@ -79,10 +96,12 @@ function setupEventListeners() {
   audioToggle.addEventListener('change', updateQualityInfo);
   videoToggle.addEventListener('change', updateQualityInfo);
   ffmpegToggle.addEventListener('change', updateQualityInfo);
+  mirrorToggle.addEventListener('change', updateQualityInfo);
   
   // Settings and help links
   document.getElementById('settings-link').addEventListener('click', openSettings);
   document.getElementById('help-link').addEventListener('click', openHelp);
+  document.getElementById('github-link').addEventListener('click', openGitHub);
 }
 
 // Start recording
@@ -150,8 +169,11 @@ function getRecordingSettings() {
     audio: audioToggle.checked,
     video: videoToggle.checked,
     useFFmpeg: ffmpegToggle.checked,
+    mirrorTabAudio: mirrorToggle.checked,
     videoBitsPerSecond: preset.videoBitsPerSecond,
     audioBitsPerSecond: preset.audioBitsPerSecond,
+    maxWidth: preset.maxWidth,
+    maxFps: preset.maxFps,
     mimeType: 'video/webm;codecs=vp9,opus'
   };
 }
@@ -202,6 +224,7 @@ function updateQualityInfo() {
   
   sizeEstimate.textContent = preset.sizePerMinute;
   compressionRatio.textContent = preset.compression;
+  cpuEstimate.textContent = preset.cpuUsage;
   
   // Save settings
   saveSettings();
@@ -211,13 +234,14 @@ function updateQualityInfo() {
 async function loadSettings() {
   try {
     const result = await chrome.storage.sync.get([
-      'quality', 'audio', 'video', 'ffmpeg'
+      'quality', 'audio', 'video', 'ffmpeg', 'mirror'
     ]);
     
     if (result.quality) qualitySelect.value = result.quality;
     if (result.audio !== undefined) audioToggle.checked = result.audio;
     if (result.video !== undefined) videoToggle.checked = result.video;
     if (result.ffmpeg !== undefined) ffmpegToggle.checked = result.ffmpeg;
+    if (result.mirror !== undefined) mirrorToggle.checked = result.mirror;
     
     updateQualityInfo();
     
@@ -233,27 +257,57 @@ async function saveSettings() {
       quality: qualitySelect.value,
       audio: audioToggle.checked,
       video: videoToggle.checked,
-      ffmpeg: ffmpegToggle.checked
+      ffmpeg: ffmpegToggle.checked,
+      mirror: mirrorToggle.checked
     });
   } catch (error) {
     console.error('Error saving settings:', error);
   }
 }
 
-// Show error message
+// Show error message with enhanced UI
 function showError(message) {
-  // Simple error display - could be enhanced with toast notifications
   console.error('Error:', message);
   
   // Update status to show error
   recordingStatus.querySelector('.status-text').textContent = 'Hata';
   recordingStatus.querySelector('.status-dot').classList.add('error');
   
-  // Reset after 3 seconds
+  // Show error in progress text
+  progressText.textContent = `Hata: ${message}`;
+  progressContainer.classList.remove('hidden');
+  
+  // Reset after 5 seconds
   setTimeout(() => {
     recordingStatus.querySelector('.status-text').textContent = 'Hazır';
     recordingStatus.querySelector('.status-dot').classList.remove('error');
+    progressContainer.classList.add('hidden');
+  }, 5000);
+}
+
+// Show success message
+function showSuccess(message) {
+  console.log('Success:', message);
+  
+  recordingStatus.querySelector('.status-text').textContent = 'Başarılı';
+  recordingStatus.querySelector('.status-dot').classList.add('success');
+  
+  setTimeout(() => {
+    recordingStatus.querySelector('.status-text').textContent = 'Hazır';
+    recordingStatus.querySelector('.status-dot').classList.remove('success');
   }, 3000);
+}
+
+// Show progress
+function showProgress(percentage, text) {
+  progressFill.style.width = `${percentage}%`;
+  progressText.textContent = text;
+  progressContainer.classList.remove('hidden');
+}
+
+// Hide progress
+function hideProgress() {
+  progressContainer.classList.add('hidden');
 }
 
 // Open settings page
@@ -270,6 +324,13 @@ function openHelp() {
   });
 }
 
+// Open GitHub repository
+function openGitHub() {
+  chrome.tabs.create({
+    url: 'https://github.com/lekesiz/NanoCap'
+  });
+}
+
 // Listen for messages from service worker
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Popup received message:', message.type);
@@ -280,6 +341,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       recordingStartTime = Date.now();
       updateRecordingState();
       startTimer();
+      showSuccess('Kayıt başlatıldı');
       break;
       
     case 'RECORDING_STOPPED':
@@ -287,6 +349,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       recordingStartTime = null;
       updateRecordingState();
       stopTimer();
+      showSuccess('Kayıt durduruldu');
       break;
       
     case 'RECORDING_ERROR':
@@ -294,8 +357,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
       
     case 'DOWNLOAD_READY':
-      // Handle download completion
       console.log('Download ready:', message.filename);
+      showSuccess('Dosya indirildi');
+      hideProgress();
+      break;
+      
+    case 'PROCESSING_STARTED':
+      showProgress(0, 'İşleniyor...');
+      break;
+      
+    case 'PROCESSING_PROGRESS':
+      showProgress(message.percentage, message.text);
+      break;
+      
+    case 'PROCESSING_COMPLETED':
+      hideProgress();
+      showSuccess('İşlem tamamlandı');
       break;
   }
 });

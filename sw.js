@@ -8,7 +8,15 @@ let recordingState = {
   isRecording: false,
   mediaRecorder: null,
   chunks: [],
-  startTime: null
+  startTime: null,
+  offscreenCreated: false
+};
+
+// Performance monitoring
+let performanceMetrics = {
+  startTime: null,
+  memoryUsage: 0,
+  cpuUsage: 0
 };
 
 // Message handling from popup and offscreen
@@ -110,16 +118,35 @@ async function handleDownloadRecording(data) {
 
 // Create offscreen document for secure recording
 async function createOffscreenDocument() {
-  const existingContexts = await chrome.runtime.getContexts({
-    contextTypes: ['OFFSCREEN_DOCUMENT']
-  });
-  
-  if (existingContexts.length === 0) {
-    await chrome.offscreen.createDocument({
-      url: 'offscreen.html',
-      reasons: ['USER_MEDIA'],
-      justification: 'Recording browser content with MediaRecorder API'
+  try {
+    const path = 'offscreen.html';
+    const offscreenUrl = chrome.runtime.getURL(path);
+    
+    // Check if offscreen document already exists
+    const existingContexts = await chrome.runtime.getContexts({
+      contextTypes: ['OFFSCREEN_DOCUMENT'],
+      documentUrls: [offscreenUrl]
     });
+    
+    if (existingContexts.length > 0) {
+      console.log('Offscreen document already exists');
+      recordingState.offscreenCreated = true;
+      return;
+    }
+    
+    // Create new offscreen document
+    await chrome.offscreen.createDocument({
+      url: path,
+      reasons: [chrome.offscreen.Reason.USER_MEDIA],
+      justification: 'Recording browser content with MediaRecorder API for ultra-low filesize optimization'
+    });
+    
+    recordingState.offscreenCreated = true;
+    console.log('Offscreen document created successfully');
+    
+  } catch (error) {
+    console.error('Failed to create offscreen document:', error);
+    throw error;
   }
 }
 
