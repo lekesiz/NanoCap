@@ -116,9 +116,15 @@ NanoCap, Google Chrome için geliştirilmiş, tarayıcı içi aktiviteleri (sekm
 
 ---
 
-## 🆕 v0.3.1 Güncellemeleri
+## 🆕 v0.3.2 Güncellemeleri (Ocak 2025)
 
-### Önemli Düzeltmeler
+### Kritik Düzeltmeler
+- 🎬 **Video İndirme Sorunu Çözüldü**: Data URL'ler artık düzgün binary video dosyalarına dönüştürülüyor
+- 🛑 **Durdur Butonu Düzeltildi**: Kayıt durdurma response handling eklendi
+- 📥 **Blob URL Desteği**: Service Worker'da blob URL oluşturma implementasyonu
+- 🔍 **Gelişmiş Debug**: Detaylı loglama ve hata yakalama sistemi
+
+### v0.3.1 Özellikleri
 - 🐛 **Kayıt Sorunu Tamamen Çözüldü**: Tab capture stream yönetimi ve otomatik temizlik
 - 🌍 **Çoklu Dil Desteği**: Türkçe ve İngilizce tam destek (i18n)
 - ⚙️ **Ayarlar Sayfası**: Kullanıcı tercihleri için yeni settings.html
@@ -126,11 +132,11 @@ NanoCap, Google Chrome için geliştirilmiş, tarayıcı içi aktiviteleri (sekm
 - 💾 **Bellek Yönetimi**: Blob URL'ler düzgün temizleniyor
 
 ### Teknik İyileştirmeler
-- ✅ Build scriptleri düzeltildi ve optimize edildi
-- ✅ ESLint hataları temizlendi
-- ✅ Race condition sorunları giderildi
-- ✅ Offscreen document yaşam döngüsü iyileştirildi
-- ✅ Hata mesajları Türkçeleştirildi
+- ✅ Blob download implementasyonu Chrome MV3 için optimize edildi
+- ✅ Offscreen document cleanup timing iyileştirildi
+- ✅ Export process error handling güçlendirildi
+- ✅ Data URL boyut limitleri için uyarılar eklendi
+- ✅ Chrome notifications API entegrasyonu
 
 ### UI/UX Güncellemeleri
 - 🎨 **Modern Tasarım**: Temiz, minimalist arayüz
@@ -286,13 +292,31 @@ NanoCap/
 
 ---
 
-## 🐛 Bilinen Sınırlamalar
+## 🐛 Bilinen Sınırlamalar ve Sorun Giderme
 
+### Sınırlamalar
 1. **DRM Korumalı İçerik:** Netflix gibi DRM korumalı sayfalar siyah ekran verir (tarayıcı güvenliği)
 2. **MP4 Format Desteği:** Chrome 126+ ve Chromium tabanlı tarayıcılarda geçerli
-3. **AV1 Codec:** Chrome 100+, Firefox 93+, Safari 16+ sürümlerinde desteklenir
-4. **FFmpeg.wasm:** Yoğun işlem gerektirir; WebWorker'da çalıştırılması zorunlu
-5. **File System Access:** Chrome 86+ sürümlerinde desteklenir
+3. **Büyük Dosyalar:** 50MB üzeri kayıtlarda data URL dönüşümü yavaşlayabilir
+4. **FFmpeg.wasm:** CDN üzerinden yükleme (local bundle yakında)
+5. **Mikrofon Desteği:** Henüz aktif değil (v0.4.0'da planlanıyor)
+
+### Sorun Giderme
+
+#### Kayıt Başlamıyor
+- Chrome'u tamamen kapatıp açın
+- chrome://extensions'da uzantıyı yenileyin
+- Başka sekmelerde aktif kayıt olmadığından emin olun
+
+#### Video İndirilmiyor
+- Service Worker console'unu kontrol edin (chrome://extensions)
+- 50MB üzeri kayıtlarda sorun yaşanabilir
+- Downloads klasörü izinlerini kontrol edin
+
+#### "Cannot capture a tab" Hatası
+- Sekmenin URL'si chrome:// veya chrome-extension:// ile başlıyorsa kayıt yapılamaz
+- Normal web sayfalarında test edin
+- Chrome'u yeniden başlatın
 
 ---
 
@@ -315,20 +339,24 @@ NanoCap/
 
 ---
 
-## 📈 Yol Haritası (Gelecek Sürümler)
+## 📈 Yol Haritası
 
 ### ✅ Tamamlanan Özellikler
-- [x] **v0.3.0** - File System Access ile akış halinde yazma (2+ saat kayıtlar) ✅
-- [x] **v0.4.0** - AV1 codec desteği (daha küçük dosyalar) ✅
-- [x] **v0.5.0** - Otomatik parçalı kayıt (N dakika/MB'de dosya bölme) ✅
-- [x] **v0.6.0** - Mikrofon karışımı (konuşma ekleme) ✅
-- [x] **v1.0.0** - Chrome Web Store hazırlığı ve beta testing ✅
+- [x] **v0.3.0** - Temel kayıt ve indirme altyapısı
+- [x] **v0.3.1** - i18n desteği ve Chrome Web Store uyumluluğu
+- [x] **v0.3.2** - Blob download düzeltmesi ve debug iyileştirmeleri
+
+### 🚧 Devam Eden Çalışmalar
+- [ ] **v0.4.0** - FFmpeg.wasm local bundle (CDN yerine)
+- [ ] **v0.5.0** - Mikrofon ses kaydı entegrasyonu
+- [ ] **v0.6.0** - File System Access API ile büyük dosya desteği
+- [ ] **v0.7.0** - AV1 codec desteği (deneysel)
 
 ### 🚀 Gelecek Sürümler
-- [ ] **v0.7.0** - AI-powered smart compression
-- [ ] **v0.8.0** - Cloud integration ve otomatik yedekleme
-- [ ] **v0.9.0** - Mobile browser support
-- [ ] **v2.0.0** - Enterprise features ve team collaboration
+- [ ] **v0.8.0** - Otomatik parçalı kayıt (zaman/boyut bazlı)
+- [ ] **v0.9.0** - Cloud entegrasyonu (Google Drive, Dropbox)
+- [ ] **v1.0.0** - Chrome Web Store resmi yayını
+- [ ] **v2.0.0** - Enterprise özellikler ve team işbirliği
 
 ---
 
@@ -373,6 +401,28 @@ in the Software without restriction...
 - Chrome Web Platform ekibine (tabCapture, offscreen API)
 - FFmpeg.wasm geliştiricilerine
 - Topluluğa verilen geri bildirim için
+- Beta test kullanıcılarına
+
+## 🔧 Geliştirici Notları
+
+### Build & Deploy
+```bash
+# Development
+npm install
+npm run build:dev
+
+# Production
+npm run build
+
+# Test
+npm test
+```
+
+### Debug Mode
+Service Worker console'unu açmak için:
+1. chrome://extensions
+2. NanoCap → "Service Worker" linkine tıklayın
+3. Console sekmesinde detaylı logları görün
 
 ---
 
