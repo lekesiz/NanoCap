@@ -42,6 +42,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'DOWNLOAD_RECORDING':
       handleDownloadRecording(message.data);
       break;
+    case 'REC_EXPORT':
+      // Handle recording export from offscreen document
+      handleRecordingExport(message);
+      break;
+    case 'REC_ERROR':
+      // Handle recording error
+      console.error('Recording error:', message.error);
+      recordingState.isRecording = false;
+      break;
   }
 
   return true; // Keep message channel open for async response
@@ -52,18 +61,35 @@ async function handleStartRecording(data) {
   try {
     console.log('Starting recording with settings:', data);
 
+    // Get active tab for recording
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    console.log('Active tab:', tab);
+
+    // Get stream ID for tab capture
+    const streamId = await chrome.tabCapture.getMediaStreamId({
+      targetTabId: tab.id,
+    });
+    console.log('Stream ID obtained:', streamId);
+
     // Create offscreen document for secure recording
     await createOffscreenDocument();
 
-    // Send recording parameters to offscreen
+    // Send recording parameters to offscreen with streamId
     chrome.runtime.sendMessage({
-      type: 'RECORDING_CONFIG',
+      type: 'START_RECORDING_OFFSCREEN',
       data: {
-        quality: data.quality || 'balanced',
-        audio: data.audio !== false,
-        video: data.video !== false,
-        compression: data.compression || 'vp9',
-      },
+        streamId: streamId,
+        options: {
+          quality: data.quality || 'balanced',
+          audio: data.audio !== false,
+          video: data.video !== false,
+          mirrorTabAudio: data.mirrorTabAudio || false,
+          vbps: data.videoBitsPerSecond,
+          abps: data.audioBitsPerSecond,
+          maxWidth: data.maxWidth,
+          maxFps: data.maxFps,
+        }
+      }
     });
 
     recordingState.isRecording = true;
@@ -73,6 +99,7 @@ async function handleStartRecording(data) {
   } catch (error) {
     console.error('Failed to start recording:', error);
     recordingState.isRecording = false;
+    throw error;
   }
 }
 
@@ -116,6 +143,59 @@ async function handleDownloadRecording(data) {
     console.log('Download initiated:', filename);
   } catch (error) {
     console.error('Failed to download recording:', error);
+  }
+}
+
+// Handle recording export from offscreen document
+async function handleRecordingExport(message) {
+  try {
+    console.log('Handling recording export:', message.filename);
+
+    // Convert data URL to blob
+    const response = await fetch(message.dataUrl);
+    const blob = await response.blob();
+    
+    console.log('Blob size:', blob.size, 'bytes');
+
+    // Create download URL
+    const url = URL.createObjectURL(blob);
+
+    // Trigger download
+    chrome.downloads.download({
+      url,
+      filename: message.filename,
+      saveAs: true,
+    }, (downloadId) => {
+      if (chrome.runtime.lastError) {
+        console.error('Download failed:', chrome.runtime.lastError);
+      } else {
+        console.log('Download started with ID:', downloadId);
+        
+        // Store recording info
+        chrome.storage.local.get(['recordings'], (result) => {
+          const recordings = result.recordings || [];
+          recordings.unshift({
+            id: downloadId,
+            filename: message.filename,
+            size: blob.size,
+            date: Date.now()
+          });
+          
+          // Keep only last 10 recordings
+          if (recordings.length > 10) {
+            recordings.pop();
+          }
+          
+          chrome.storage.local.set({ recordings });
+        });
+      }
+    });
+
+    // Clean up
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    
+  } catch (error) {
+    console.error('Failed to export recording:', error);
   }
 }
 

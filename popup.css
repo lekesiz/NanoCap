@@ -11,18 +11,20 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #2c3e50;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  color: #1a1a1a;
+  background: #f5f5f5;
+  width: 400px;
+  min-height: 550px;
+  margin: 0;
   overflow-x: hidden;
 }
 
 .container {
-  width: 380px;
-  min-height: 520px;
+  width: 100%;
+  min-height: 550px;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -31,7 +33,7 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2563eb;
   color: white;
   padding: 24px 20px;
   text-align: center;
@@ -61,17 +63,19 @@ body {
 }
 
 .logo h1 {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
   margin-bottom: 6px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: none;
+  letter-spacing: -0.5px;
 }
 
 .tagline {
-  font-size: 13px;
-  opacity: 0.95;
+  font-size: 14px;
+  opacity: 1;
   font-weight: 400;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  color: #e0f2fe;
 }
 
 .version-badge {
@@ -90,8 +94,8 @@ body {
 .status-section {
   padding: 24px 20px;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
 }
 
 .status-indicator {
@@ -155,8 +159,8 @@ body {
 
 .status-text {
   font-weight: 700;
-  font-size: 16px;
-  color: #2c3e50;
+  font-size: 18px;
+  color: #1a1a1a;
 }
 
 .timer {
@@ -170,13 +174,14 @@ body {
 /* Settings Section */
 .settings-section {
   padding: 24px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
 }
 
 .settings-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: #2c3e50;
+  color: #1a1a1a;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -194,7 +199,8 @@ body {
   align-items: center;
   margin-bottom: 16px;
   font-weight: 600;
-  color: #34495e;
+  color: #374151;
+  font-size: 15px;
 }
 
 .setting-label:last-child {
@@ -202,20 +208,22 @@ body {
 }
 
 .setting-label select {
-  padding: 8px 12px;
-  border: 2px solid #e1e8ed;
+  padding: 10px 14px;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   background: white;
-  min-width: 140px;
+  min-width: 150px;
   transition: all 0.3s ease;
   cursor: pointer;
+  color: #1a1a1a;
+  font-weight: 500;
 }
 
 .setting-label select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Microphone Controls */
@@ -338,14 +346,14 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 28px;
+  padding: 16px 32px;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 160px;
+  min-width: 180px;
   justify-content: center;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -369,14 +377,15 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: #10b981;
   color: white;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
 .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: #059669;
 }
 
 .btn-primary:active {
@@ -384,14 +393,15 @@ body {
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  background: #ef4444;
   color: white;
-  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .btn-secondary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: #dc2626;
 }
 
 .btn-secondary:active {
@@ -429,14 +439,14 @@ body {
 
 .info-label {
   font-weight: 600;
-  color: #7f8c8d;
-  font-size: 13px;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 .info-value {
   font-weight: 700;
-  color: #2c3e50;
-  font-size: 13px;
+  color: #1a1a1a;
+  font-size: 14px;
 }
 
 /* Recent Section */
@@ -447,9 +457,9 @@ body {
 }
 
 .recent-section h3 {
-  font-size: 16px;
+  font-size: 18px;
   margin-bottom: 16px;
-  color: #2c3e50;
+  color: #1a1a1a;
   font-weight: 700;
   display: flex;
   align-items: center;

@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update quality info
   updateQualityInfo();
+
+  // Load recent recordings
+  loadRecentRecordings();
 });
 
 // Setup event listeners
@@ -428,6 +431,54 @@ function handleTabVolumeChange(event) {
 function handleNoiseReductionToggle(event) {
   console.log('Noise reduction toggled:', event.target.checked);
 }
+
+// Load and display recent recordings
+async function loadRecentRecordings() {
+  try {
+    const result = await chrome.storage.local.get(['recordings']);
+    const recordings = result.recordings || [];
+    
+    const recentList = document.getElementById('recent-list');
+    if (!recentList) return;
+    
+    if (recordings.length === 0) {
+      recentList.innerHTML = '<div class="no-recordings">Henüz kayıt yok</div>';
+      return;
+    }
+    
+    recentList.innerHTML = recordings.map(rec => {
+      const date = new Date(rec.date);
+      const dateStr = date.toLocaleDateString('tr-TR');
+      const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      const sizeStr = formatFileSize(rec.size);
+      
+      return `
+        <div class="recent-item">
+          <div class="recent-info">
+            <span class="recent-name">${rec.filename}</span>
+            <span class="recent-meta">${dateStr} ${timeStr} - ${sizeStr}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Failed to load recordings:', error);
+  }
+}
+
+// Format file size
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  else if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
+  else return Math.round(bytes / 1048576 * 10) / 10 + ' MB';
+}
+
+// Listen for storage changes to update recent recordings
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.recordings) {
+    loadRecentRecordings();
+  }
+});
 
 console.log('NanoCap Popup ready');
 

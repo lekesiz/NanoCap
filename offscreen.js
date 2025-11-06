@@ -254,11 +254,17 @@ async function compressWithFFmpeg(blob, settings) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Offscreen received message:', message.type);
 
-  if (message.target !== 'offscreen') {
-    return false;
-  }
-
   switch (message.type) {
+    case 'START_RECORDING_OFFSCREEN':
+      startRecording(message.data);
+      sendResponse({ success: true });
+      break;
+
+    case 'STOP_RECORDING_SIGNAL':
+      stopRecording();
+      sendResponse({ success: true });
+      break;
+
     case 'REC_START':
       startRecording(message.payload);
       sendResponse({ success: true });
@@ -279,18 +285,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case 'COMPRESS_VIDEO':
       // Compress video with FFmpeg
-      compressWithFFmpeg(message.blob, message.settings || {})
-        .then((compressedBlob) => {
-          sendResponse({ success: true, blob: compressedBlob });
-        })
-        .catch((error) => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Keep channel open for async response
+      if (message.target === 'offscreen') {
+        compressWithFFmpeg(message.blob, message.settings || {})
+          .then((compressedBlob) => {
+            sendResponse({ success: true, blob: compressedBlob });
+          })
+          .catch((error) => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Keep channel open for async response
+      }
+      break;
 
     default:
       console.warn('Unknown message type:', message.type);
-      sendResponse({ success: false, error: 'Unknown message type' });
+      return false;
   }
 
   return true; // Keep message channel open for async response
