@@ -12,6 +12,15 @@ const recordingState = {
   offscreenCreated: false,
 };
 
+// Restore recording state from storage on initialization
+chrome.storage.local.get(['recordingState'], (result) => {
+  if (result.recordingState) {
+    recordingState.isRecording = result.recordingState.isRecording || false;
+    recordingState.startTime = result.recordingState.startTime || null;
+    console.log('Restored recording state:', recordingState);
+  }
+});
+
 // Performance monitoring (placeholder for v0.4.0)
 // const performanceMetrics = {
 //   startTime: null,
@@ -34,10 +43,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       break;
     case 'STOP_RECORDING':
-      handleStopRecording();
+      handleStopRecording()
+        .then(() => {
+          sendResponse({ success: true });
+        })
+        .catch((error) => {
+          sendResponse({ success: false, error: error.message });
+        });
       break;
     case 'GET_RECORDING_STATE':
-      sendResponse({ state: recordingState });
+      sendResponse({
+        state: {
+          isRecording: recordingState.isRecording,
+          startTime: recordingState.startTime,
+          offscreenCreated: recordingState.offscreenCreated,
+        },
+      });
       break;
     case 'DOWNLOAD_RECORDING':
       handleDownloadRecording(message.data);
@@ -65,8 +86,8 @@ async function handleStartRecording(data) {
     if (recordingState.isRecording || recordingState.offscreenCreated) {
       console.log('Cleaning up existing recording session...');
       await handleStopRecording();
-      // Wait a bit for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Wait longer for cleanup to complete
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     // Get active tab for recording
@@ -104,6 +125,9 @@ async function handleStartRecording(data) {
     await createOffscreenDocument();
 
     // Send recording parameters to offscreen with streamId
+    // Add a small delay to ensure offscreen document is ready
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     chrome.runtime.sendMessage({
       type: 'START_RECORDING_OFFSCREEN',
       data: {
@@ -123,6 +147,14 @@ async function handleStartRecording(data) {
 
     recordingState.isRecording = true; // eslint-disable-line require-atomic-updates
     recordingState.startTime = Date.now(); // eslint-disable-line require-atomic-updates
+
+    // Save recording state to storage
+    chrome.storage.local.set({
+      recordingState: {
+        isRecording: true,
+        startTime: recordingState.startTime,
+      },
+    });
 
     console.log('Recording started successfully');
   } catch (error) {
@@ -150,21 +182,36 @@ async function handleStopRecording() {
 
     recordingState.isRecording = false;
 
+    // Clear recording state from storage
+    chrome.storage.local.set({
+      recordingState: {
+        isRecording: false,
+        startTime: null,
+      },
+    });
+
     // Send stop signal to offscreen
     chrome.runtime.sendMessage({
       type: 'STOP_RECORDING_SIGNAL',
     });
 
-    // Close offscreen document to release stream
-    if (recordingState.offscreenCreated) {
-      try {
-        await chrome.offscreen.closeDocument();
-        recordingState.offscreenCreated = false; // eslint-disable-line require-atomic-updates
-        console.log('Offscreen document closed');
-      } catch (error) {
-        console.log('Offscreen document already closed or error:', error);
+    // Don't close offscreen document immediately - wait for export to complete
+    // The offscreen document will close itself after export
+    console.log('Stop signal sent to offscreen document');
+    console.log('Waiting for recording export before closing offscreen document...');
+
+    // Set a timeout to close the offscreen document after giving it time to export
+    setTimeout(async () => {
+      if (recordingState.offscreenCreated) {
+        try {
+          await chrome.offscreen.closeDocument();
+          recordingState.offscreenCreated = false; // eslint-disable-line require-atomic-updates
+          console.log('Offscreen document closed after export timeout');
+        } catch (error) {
+          console.log('Offscreen document already closed or error:', error);
+        }
       }
-    }
+    }, 5000); // Wait 5 seconds for export to complete
 
     console.log('Recording stopped');
   } catch (error) {
@@ -173,25 +220,13 @@ async function handleStopRecording() {
 }
 
 // Handle download with compression
-async function handleDownloadRecording(data) {
+async function handleDownloadRecording(_data) {
   try {
-    console.log('Processing recording for download:', data.blob.size, 'bytes');
+    console.log('Processing recording for download');
 
-    // Two-stage compression strategy
-    const compressedBlob = await compressRecording(data.blob, data.settings);
-
-    // Create download URL
-    const url = URL.createObjectURL(compressedBlob);
-    const filename = `nanocap-recording-${Date.now()}.webm`;
-
-    // Trigger download
-    chrome.downloads.download({
-      url,
-      filename,
-      saveAs: true,
-    });
-
-    console.log('Download initiated:', filename);
+    // This function is not used in the current flow
+    // Recording export is handled by handleRecordingExport
+    console.warn('handleDownloadRecording called but not implemented for current flow');
   } catch (error) {
     console.error('Failed to download recording:', error);
   }
@@ -201,28 +236,74 @@ async function handleDownloadRecording(data) {
 async function handleRecordingExport(message) {
   try {
     console.log('Handling recording export:', message.filename);
+    console.log('Export message details:', {
+      filename: message.filename,
+      hasDataUrl: !!message.dataUrl,
+      dataUrlLength: message.dataUrl ? message.dataUrl.length : 0,
+      blobSize: message.blobSize,
+      mimeType: message.mimeType,
+    });
+
+    // Validate message data
+    if (!message.dataUrl) {
+      throw new Error('No data URL provided in recording export');
+    }
+
+    // For Chrome MV3, we need to convert data URL to blob URL
+    console.log('Processing recording for download...');
+    console.log('Filename:', message.filename);
+
+    // Validate data URL format
+    if (!message.dataUrl || !message.dataUrl.startsWith('data:')) {
+      console.error('Invalid data URL:', {
+        hasDataUrl: !!message.dataUrl,
+        startsWithData: message.dataUrl ? message.dataUrl.startsWith('data:') : false,
+        dataUrlPreview: message.dataUrl ? message.dataUrl.substring(0, 50) : 'null',
+      });
+      throw new Error('Invalid data URL format');
+    }
 
     // Convert data URL to blob
-    const response = await fetch(message.dataUrl);
-    const blob = await response.blob();
+    console.log('Converting data URL to blob...');
+    let response, blob;
+    try {
+      response = await fetch(message.dataUrl);
+      blob = await response.blob();
+      console.log('Blob created successfully:', blob.size, 'bytes, type:', blob.type);
+    } catch (error) {
+      console.error('Failed to convert data URL to blob:', error);
+      throw new Error(`Failed to process recording data: ${error.message}`);
+    }
 
-    console.log('Blob size:', blob.size, 'bytes');
+    // Create a blob URL for download
+    const blobUrl = URL.createObjectURL(blob);
 
-    // Create download URL
-    const url = URL.createObjectURL(blob);
-
-    // Trigger download
+    // Chrome's download API with blob URL
+    console.log('Initiating download with chrome.downloads API...');
     chrome.downloads.download(
       {
-        url,
+        url: blobUrl,
         filename: message.filename,
         saveAs: true,
       },
       (downloadId) => {
         if (chrome.runtime.lastError) {
           console.error('Download failed:', chrome.runtime.lastError);
+          console.error('Download error details:', chrome.runtime.lastError.message);
+
+          // Notify user of download failure
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'images/icon-48.png',
+            title: 'NanoCap - Download Failed',
+            message: `Failed to download recording: ${chrome.runtime.lastError.message}`,
+          });
+
+          // Clean up blob URL on error
+          URL.revokeObjectURL(blobUrl);
         } else {
-          console.log('Download started with ID:', downloadId);
+          console.log('Download started successfully with ID:', downloadId);
+          console.log('File will be saved as:', message.filename);
 
           // Store recording info
           chrome.storage.local.get(['recordings'], (result) => {
@@ -239,17 +320,23 @@ async function handleRecordingExport(message) {
               recordings.pop();
             }
 
-            chrome.storage.local.set({ recordings });
+            chrome.storage.local.set({ recordings }, () => {
+              console.log('Recording info saved to storage');
+            });
           });
+
+          // Clean up blob URL after a delay to ensure download starts
+          setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+            console.log('Blob URL revoked');
+          }, 5000);
         }
       }
     );
 
-    // Clean up blob URL after download starts
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      console.log('Blob URL revoked:', url);
-    }, 5000); // 5 seconds should be enough for download to start
+    // Mark recording as complete
+    recordingState.isRecording = false;
+    recordingState.startTime = null;
   } catch (error) {
     console.error('Failed to export recording:', error);
   }

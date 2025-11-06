@@ -25,6 +25,29 @@ const progressText = document.getElementById('progress-text');
 let isRecording = false;
 let recordingStartTime = null;
 
+// Check recording state from service worker
+async function checkRecordingState() {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: 'GET_RECORDING_STATE',
+    });
+
+    if (response && response.state) {
+      isRecording = response.state.isRecording || false;
+      if (isRecording && response.state.startTime) {
+        recordingStartTime = response.state.startTime;
+        updateRecordingState();
+        startTimer();
+      } else {
+        updateRecordingState();
+      }
+    }
+  } catch (error) {
+    console.error('Failed to get recording state:', error);
+    updateRecordingState();
+  }
+}
+
 // Advanced features integration (placeholders for v0.4.0)
 // const advancedFFmpegProcessor = null; // Future: Advanced FFmpeg processing
 // const av1CodecProcessor = null; // Future: AV1 codec support
@@ -115,8 +138,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load saved settings
   loadSettings();
 
-  // Update UI based on current state
-  updateRecordingState();
+  // Check actual recording state from service worker
+  await checkRecordingState();
 
   // Setup event listeners
   setupEventListeners();
@@ -229,9 +252,13 @@ async function stopRecording() {
     console.log('Stopping recording...');
 
     // Send stop command to service worker
-    await chrome.runtime.sendMessage({
+    const response = await chrome.runtime.sendMessage({
       type: 'STOP_RECORDING',
     });
+
+    if (!response || !response.success) {
+      throw new Error(response?.error || 'Kayıt durdurulamadı');
+    }
 
     isRecording = false;
     recordingStartTime = null;

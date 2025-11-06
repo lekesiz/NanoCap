@@ -90,40 +90,79 @@ async function startRecording({ streamId, options }) {
     // Handle recording stop
     recorder.onstop = async () => {
       console.log('Recording stopped, processing chunks...');
+      console.log('Total chunks collected:', chunks.length);
 
       try {
+        // Check if we have any chunks
+        if (chunks.length === 0) {
+          throw new Error('No recording chunks collected');
+        }
+
         const blob = new Blob(chunks, { type: mimeChosen });
         console.log('Final blob size:', blob.size, 'bytes');
 
-        // Convert blob to data URL for download
-        const dataUrl = await blobToDataURL(blob);
+        if (blob.size === 0) {
+          throw new Error('Recording blob is empty after processing');
+        }
 
         // Determine file extension based on MIME type
         const ext = mimeChosen.startsWith('video/mp4') ? 'mp4' : 'webm';
         const filename = `nanocap_${Date.now()}.${ext}`;
 
+        // For large files, data URLs can fail. Let's add size check
+        console.log('Blob size before export:', blob.size, 'bytes');
+        console.log('Blob size in MB:', (blob.size / (1024 * 1024)).toFixed(2), 'MB');
+
+        if (blob.size > 50 * 1024 * 1024) {
+          // If larger than 50MB
+          console.warn('Large recording detected (>50MB), data URL conversion may fail');
+        }
+
+        // Convert blob to data URL for download
+        let dataUrl;
+        try {
+          console.log('Converting blob to data URL...');
+          dataUrl = await blobToDataURL(blob);
+          console.log('Data URL created successfully, length:', dataUrl.length);
+          console.log('Data URL preview:', dataUrl.substring(0, 100));
+        } catch (error) {
+          console.error('Failed to convert blob to data URL:', error);
+          throw new Error(`Failed to prepare recording for download: ${error.message}`);
+        }
+
         // Send to service worker for download
+        console.log('Sending REC_EXPORT message to service worker...');
         chrome.runtime.sendMessage({
           type: 'REC_EXPORT',
           dataUrl,
           filename,
+          blobSize: blob.size,
+          mimeType: mimeChosen,
         });
 
         console.log('Export request sent:', filename);
+        console.log('Waiting for download to start before cleanup...');
 
-        // Clean up blob to prevent memory leak
-        chunks.length = 0; // eslint-disable-line require-atomic-updates
+        // Give some time for the download to start before cleanup
+        setTimeout(() => {
+          console.log('Post-export cleanup initiated');
+          chunks.length = 0; // eslint-disable-line require-atomic-updates
+          cleanup();
+        }, 2000);
       } catch (error) {
         console.error('Error processing recording:', error);
+        console.error('Chunks length:', chunks.length);
+        console.error('MIME type used:', mimeChosen);
 
         // Notify service worker of error
         chrome.runtime.sendMessage({
           type: 'REC_ERROR',
           error: error.message,
         });
-      }
 
-      cleanup();
+        // Still cleanup on error
+        cleanup();
+      }
     };
 
     // Handle recording errors
@@ -141,28 +180,37 @@ async function startRecording({ streamId, options }) {
     console.log('Recording started successfully');
   } catch (error) {
     console.error('Failed to start recording:', error);
+    console.error('Error details:', error.stack);
 
     chrome.runtime.sendMessage({
       type: 'REC_ERROR',
       error: error.message || 'Failed to start recording',
     });
+
+    // Ensure cleanup on error
+    cleanup();
   }
 }
 
 // Stop recording
 function stopRecording() {
   try {
+    console.log('stopRecording() called');
+    console.log('Recorder state:', recorder ? recorder.state : 'null');
+    console.log('Current chunks count:', chunks.length);
+
     if (recorder && recorder.state === 'recording') {
       recorder.stop();
-      console.log('Stop recording requested');
+      console.log('Stop recording requested - MediaRecorder.stop() called');
+      // Don't cleanup here - wait for onstop event to finish processing
+      console.log('Waiting for onstop event to process chunks...');
     } else {
       console.warn('No active recording to stop');
+      cleanup();
     }
-
-    // Clean up immediately to release stream
-    cleanup();
   } catch (error) {
     console.error('Error stopping recording:', error);
+    cleanup();
   }
 }
 
@@ -260,6 +308,12 @@ async function compressWithFFmpeg(blob, settings) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Offscreen received message:', message.type);
 
+  // Filter out messages not meant for offscreen document
+  if (message.type === 'GET_RECORDING_STATE' || message.type === 'STOP_RECORDING') {
+    // These messages are for service worker, not offscreen
+    return false;
+  }
+
   switch (message.type) {
     case 'START_RECORDING_OFFSCREEN':
       startRecording(message.data);
@@ -272,19 +326,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
 
     case 'START_RECORDING':
-      // Handle message from popup
+      // Handle message from popup - ignore it
       console.log('Received START_RECORDING from popup, ignoring in offscreen');
+      sendResponse({ ignored: true });
       return false; // Let service worker handle this
 
-    case 'REC_START':
-      startRecording(message.payload);
-      sendResponse({ success: true });
-      break;
-
-    case 'REC_STOP':
-      stopRecording();
-      sendResponse({ success: true });
-      break;
+    // Removed duplicate REC_START and REC_STOP handlers
+    // Only START_RECORDING_OFFSCREEN and STOP_RECORDING_SIGNAL should be used
 
     case 'REC_STATUS':
       sendResponse({
