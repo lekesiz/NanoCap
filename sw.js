@@ -27,20 +27,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'START_RECORDING':
       handleStartRecording(message.data)
         .then(() => {
+          // Notify popup recording started
+          chrome.runtime.sendMessage({
+            type: 'RECORDING_STARTED',
+          });
           sendResponse({ success: true });
         })
         .catch((error) => {
+          // Notify popup of error
+          chrome.runtime.sendMessage({
+            type: 'RECORDING_ERROR',
+            error: error.message || 'Failed to start recording',
+          });
           sendResponse({ success: false, error: error.message });
         });
       break;
     case 'STOP_RECORDING':
       handleStopRecording();
+      sendResponse({ success: true });
       break;
     case 'GET_RECORDING_STATE':
       sendResponse({ state: recordingState });
       break;
     case 'DOWNLOAD_RECORDING':
       handleDownloadRecording(message.data);
+      sendResponse({ success: true });
+      break;
+    case 'REC_EXPORT':
+      // Handle recording export from offscreen document
+      handleRecordingExport(message);
+      sendResponse({ success: true });
+      break;
+    case 'REC_ERROR':
+      // Handle recording error from offscreen
+      console.error('Recording error from offscreen:', message.error);
+      chrome.runtime.sendMessage({
+        type: 'RECORDING_ERROR',
+        error: message.error,
+      });
       break;
   }
 
@@ -52,17 +76,39 @@ async function handleStartRecording(data) {
   try {
     console.log('Starting recording with settings:', data);
 
+    // Get active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab) {
+      throw new Error('No active tab found');
+    }
+
+    console.log('Active tab:', tab.id);
+
+    // Get streamId from tabCapture API
+    const streamId = await chrome.tabCapture.getMediaStreamId({
+      targetTabId: tab.id,
+    });
+
+    console.log('StreamId obtained:', streamId);
+
     // Create offscreen document for secure recording
     await createOffscreenDocument();
 
-    // Send recording parameters to offscreen
-    chrome.runtime.sendMessage({
-      type: 'RECORDING_CONFIG',
-      data: {
+    // Send recording parameters to offscreen with streamId
+    await chrome.runtime.sendMessage({
+      type: 'START_RECORDING',
+      streamId,
+      options: {
         quality: data.quality || 'balanced',
         audio: data.audio !== false,
         video: data.video !== false,
         compression: data.compression || 'vp9',
+        useFFmpeg: data.useFFmpeg || false,
+        mirrorTabAudio: data.mirrorTabAudio !== false,
+        vbps: data.videoBitsPerSecond || 900000,
+        abps: data.audioBitsPerSecond || 96000,
+        maxWidth: data.maxWidth || 1280,
+        maxFps: data.maxFps || 15,
       },
     });
 
@@ -73,6 +119,7 @@ async function handleStartRecording(data) {
   } catch (error) {
     console.error('Failed to start recording:', error);
     recordingState.isRecording = false;
+    throw error;
   }
 }
 
@@ -84,13 +131,55 @@ async function handleStopRecording() {
     recordingState.isRecording = false;
 
     // Send stop signal to offscreen
-    chrome.runtime.sendMessage({
+    await chrome.runtime.sendMessage({
       type: 'STOP_RECORDING_SIGNAL',
+    });
+
+    // Notify popup that recording stopped
+    chrome.runtime.sendMessage({
+      type: 'RECORDING_STOPPED',
     });
 
     console.log('Recording stopped');
   } catch (error) {
     console.error('Failed to stop recording:', error);
+
+    // Notify popup of error
+    chrome.runtime.sendMessage({
+      type: 'RECORDING_ERROR',
+      error: error.message || 'Failed to stop recording',
+    });
+  }
+}
+
+// Handle recording export from offscreen document
+async function handleRecordingExport(message) {
+  try {
+    console.log('Handling recording export:', message.filename);
+
+    // Convert data URL back to blob
+    const response = await fetch(message.dataUrl);
+    const blob = await response.blob();
+
+    console.log('Blob converted from dataURL:', blob.size, 'bytes');
+
+    // Get recording settings from popup (useFFmpeg, etc.)
+    const settings = {
+      useFFmpeg: false, // TODO: Get from recordingState
+      crf: 35,
+      codec: 'vp9',
+    };
+
+    // Process and download
+    await handleDownloadRecording({ blob, settings });
+  } catch (error) {
+    console.error('Failed to handle recording export:', error);
+
+    // Notify popup of error
+    chrome.runtime.sendMessage({
+      type: 'RECORDING_ERROR',
+      error: error.message || 'Failed to export recording',
+    });
   }
 }
 
@@ -99,23 +188,46 @@ async function handleDownloadRecording(data) {
   try {
     console.log('Processing recording for download:', data.blob.size, 'bytes');
 
+    // Notify popup processing started
+    chrome.runtime.sendMessage({
+      type: 'PROCESSING_STARTED',
+    });
+
     // Two-stage compression strategy
     const compressedBlob = await compressRecording(data.blob, data.settings);
+
+    // Notify popup processing completed
+    chrome.runtime.sendMessage({
+      type: 'PROCESSING_COMPLETED',
+    });
 
     // Create download URL
     const url = URL.createObjectURL(compressedBlob);
     const filename = `nanocap-recording-${Date.now()}.webm`;
 
     // Trigger download
-    chrome.downloads.download({
+    await chrome.downloads.download({
       url,
       filename,
       saveAs: true,
     });
 
+    // Notify popup download ready
+    chrome.runtime.sendMessage({
+      type: 'DOWNLOAD_READY',
+      filename,
+      size: compressedBlob.size,
+    });
+
     console.log('Download initiated:', filename);
   } catch (error) {
     console.error('Failed to download recording:', error);
+
+    // Notify popup of error
+    chrome.runtime.sendMessage({
+      type: 'RECORDING_ERROR',
+      error: error.message || 'Failed to download recording',
+    });
   }
 }
 

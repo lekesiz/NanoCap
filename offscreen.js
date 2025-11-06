@@ -254,16 +254,22 @@ async function compressWithFFmpeg(blob, settings) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Offscreen received message:', message.type);
 
-  if (message.target !== 'offscreen') {
+  // Handle both target filtering and direct messages
+  if (message.target && message.target !== 'offscreen') {
     return false;
   }
 
   switch (message.type) {
-    case 'REC_START':
-      startRecording(message.payload);
+    case 'START_RECORDING':
+    case 'REC_START': {
+      // Support both message formats
+      const payload = message.payload || { streamId: message.streamId, options: message.options };
+      startRecording(payload);
       sendResponse({ success: true });
       break;
+    }
 
+    case 'STOP_RECORDING_SIGNAL':
     case 'REC_STOP':
       stopRecording();
       sendResponse({ success: true });
