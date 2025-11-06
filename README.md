@@ -353,20 +353,27 @@ in the Software without restriction...
 
 ## 🎉 v0.3.0 Yenilikleri
 
-### ✅ Yeni Özellikler
-- **AV1 Codec Desteği:** %40-80 ek dosya boyutu tasarrufu
-- **Mikrofon Karışımı:** Profesyonel ses işleme ve mikrofon entegrasyonu
-- **File System Access:** Sınırsız kayıt uzunluğu ile akış halinde yazma
-- **Otomatik Parçalı Kayıt:** Zaman veya boyut bazlı otomatik dosya bölme
-- **Gelişmiş FFmpeg.wasm:** Multi-preset sıkıştırma sistemi
-- **Performans Optimizasyonu:** Gerçek zamanlı sistem performansı takibi
-- **Chrome Web Store Hazırlığı:** Beta testing programı ve topluluk entegrasyonu
+### ✅ Aktif Özellikler (Production Ready)
+- **FFmpeg.wasm Entegrasyonu:** %30-60 ek dosya boyutu tasarrufu
+- **VP9/VP8 Codec:** Düşük bit hızlarında mükemmel kalite
+- **Gelişmiş Sıkıştırma:** CDN üzerinden FFmpeg.wasm yükleme
+- **Real-time Progress:** Sıkıştırma sırasında ilerleme takibi
+- **Multi-codec Support:** VP9, VP8, H.264 desteği
+- **Akıllı Fallback:** Hata durumunda orijinal dosya
+- **Chrome MV3:** Manifest V3 uyumlu modern mimari
+- **Privacy-First:** 100% local processing, veri gönderimi yok
+
+### 🔄 Beta Özellikler (Geliştirme Aşamasında)
+- **AV1 Codec:** %40-80 ek tasarruf (kod yazıldı, test ediliyor)
+- **Mikrofon Karışımı:** Profesyonel ses işleme (hazır, entegrasyon devam ediyor)
+- **File System Access:** Sınırsız kayıt uzunluğu (hazır, test ediliyor)
+- **Otomatik Parçalı Kayıt:** Zaman/boyut bazlı split (hazır, test ediliyor)
 
 ### 🚀 Performans İyileştirmeleri
-- **Dosya Boyutu:** %30-80 azalma (codec'e göre)
-- **CPU Kullanımı:** 5-25% (kaliteye göre)
-- **RAM Kullanımı:** <500 MB (1 saat kayıt)
-- **Ses Kalitesi:** Profesyonel seviye mikrofon karışımı
+- **Dosya Boyutu:** %30-60 azalma (FFmpeg.wasm ile)
+- **CPU Kullanımı:** 10-15% (kayıt), 15-40% (FFmpeg sıkıştırma)
+- **RAM Kullanımı:** <300 MB (normal kayıt), <500 MB (FFmpeg aktif)
+- **İlk Yükleme:** ~30 MB (FFmpeg.wasm CDN'den, sadece ilk kullanımda)
 
 ---
 

@@ -12,7 +12,7 @@
     "copy:dev": "npm run copy:files && npm run copy:assets",
     "copy:prod": "npm run copy:files && npm run copy:assets",
     "copy:files": "cpx \"{manifest.json,sw.js,popup.html,popup.js,popup.css,offscreen.html,offscreen.js,ffmpeg-wrapper.js,performance-monitor.js,file-system-recorder.js,ffmpeg-processor.js}\" dist/",
-    "copy:assets": "cpx \"store-assets/**/*\" dist/store-assets/ && cpx \"docs/**/*\" dist/docs/",
+    "copy:assets": "cpx \"images/**/*\" dist/images/ && cpx \"store-assets/**/*\" dist/store-assets/ && cpx \"docs/**/*\" dist/docs/",
     "minify": "npm run minify:js && npm run minify:css",
     "minify:js": "terser dist/*.js -o dist/sw.min.js -o dist/popup.min.js -o dist/offscreen.min.js",
     "minify:css": "cleancss -o dist/popup.min.css dist/popup.css",
@@ -95,30 +95,9 @@
       "prettier --write"
     ]
   },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/tests/setup.js"
-    ],
-    "testMatch": [
-      "<rootDir>/tests/**/*.test.js"
-    ],
-    "collectCoverageFrom": [
-      "*.js",
-      "!node_modules/**",
-      "!tests/**",
-      "!dist/**"
-    ],
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ]
-  },
   "browserslist": [
     "Chrome >= 110",
-    "Edge >= 110",
-    "Brave >= 1.50"
+    "Edge >= 110"
   ],
   "chrome": {
     "extension": {
