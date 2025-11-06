@@ -1,0 +1,85 @@
+{
+  "extensionName": {
+    "message": "NanoCap"
+  },
+  "extensionDescription": {
+    "message": "Ultra düşük boyutlu ekran kaydedici. Diğerlerinden %80 daha küçük kayıtlar oluşturun."
+  },
+  "ready": {
+    "message": "Hazır"
+  },
+  "recording": {
+    "message": "Kaydediyor"
+  },
+  "recordingSettings": {
+    "message": "Kayıt Ayarları"
+  },
+  "qualityPreset": {
+    "message": "Kalite Ön Ayarı"
+  },
+  "ultraLow": {
+    "message": "Ultra Düşük (En küçük)"
+  },
+  "low": {
+    "message": "Düşük"
+  },
+  "balanced": {
+    "message": "Dengeli"
+  },
+  "high": {
+    "message": "Yüksek"
+  },
+  "audioRecording": {
+    "message": "Ses Kaydı"
+  },
+  "videoRecording": {
+    "message": "Video Kaydı"
+  },
+  "advancedCompression": {
+    "message": "Gelişmiş Sıkıştırma (FFmpeg)"
+  },
+  "audioMirroring": {
+    "message": "Ses Aynalama"
+  },
+  "startRecording": {
+    "message": "Kaydı Başlat"
+  },
+  "stopRecording": {
+    "message": "Kaydı Durdur"
+  },
+  "estimatedSize": {
+    "message": "Tahmini Boyut"
+  },
+  "compression": {
+    "message": "Sıkıştırma"
+  },
+  "cpuUsage": {
+    "message": "CPU Kullanımı"
+  },
+  "codec": {
+    "message": "Codec"
+  },
+  "recentRecordings": {
+    "message": "Son Kayıtlar"
+  },
+  "noRecordings": {
+    "message": "Henüz kayıt yok"
+  },
+  "processing": {
+    "message": "İşleniyor..."
+  },
+  "settings": {
+    "message": "Ayarlar"
+  },
+  "help": {
+    "message": "Yardım"
+  },
+  "perMinute": {
+    "message": "~$1 MB/dakika",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  }
+}

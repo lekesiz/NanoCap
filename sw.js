@@ -61,15 +61,44 @@ async function handleStartRecording(data) {
   try {
     console.log('Starting recording with settings:', data);
 
+    // First, ensure any existing recording is stopped
+    if (recordingState.isRecording || recordingState.offscreenCreated) {
+      console.log('Cleaning up existing recording session...');
+      await handleStopRecording();
+      // Wait a bit for cleanup
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
     // Get active tab for recording
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     console.log('Active tab:', tab);
 
     // Get stream ID for tab capture
-    const streamId = await chrome.tabCapture.getMediaStreamId({
-      targetTabId: tab.id,
-    });
-    console.log('Stream ID obtained:', streamId);
+    let streamId;
+    try {
+      streamId = await chrome.tabCapture.getMediaStreamId({
+        targetTabId: tab.id,
+      });
+      console.log('Stream ID obtained:', streamId);
+    } catch (error) {
+      if (error.message.includes('active stream')) {
+        // Force close any existing captures
+        console.log('Force closing existing captures...');
+        try {
+          await chrome.offscreen.closeDocument();
+        } catch (e) {
+          // Offscreen document may not exist
+        }
+
+        // Try again after a delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        streamId = await chrome.tabCapture.getMediaStreamId({
+          targetTabId: tab.id,
+        });
+      } else {
+        throw error;
+      }
+    }
 
     // Create offscreen document for secure recording
     await createOffscreenDocument();
@@ -78,7 +107,7 @@ async function handleStartRecording(data) {
     chrome.runtime.sendMessage({
       type: 'START_RECORDING_OFFSCREEN',
       data: {
-        streamId: streamId,
+        streamId,
         options: {
           quality: data.quality || 'balanced',
           audio: data.audio !== false,
@@ -88,17 +117,28 @@ async function handleStartRecording(data) {
           abps: data.audioBitsPerSecond,
           maxWidth: data.maxWidth,
           maxFps: data.maxFps,
-        }
-      }
+        },
+      },
     });
 
-    recordingState.isRecording = true;
-    recordingState.startTime = Date.now();
+    recordingState.isRecording = true; // eslint-disable-line require-atomic-updates
+    recordingState.startTime = Date.now(); // eslint-disable-line require-atomic-updates
 
     console.log('Recording started successfully');
   } catch (error) {
     console.error('Failed to start recording:', error);
-    recordingState.isRecording = false;
+    recordingState.isRecording = false; // eslint-disable-line require-atomic-updates
+
+    // Clean up on error
+    if (recordingState.offscreenCreated) {
+      try {
+        await chrome.offscreen.closeDocument();
+        recordingState.offscreenCreated = false; // eslint-disable-line require-atomic-updates
+      } catch (e) {
+        // Offscreen document may not exist
+      }
+    }
+
     throw error;
   }
 }
@@ -114,6 +154,17 @@ async function handleStopRecording() {
     chrome.runtime.sendMessage({
       type: 'STOP_RECORDING_SIGNAL',
     });
+
+    // Close offscreen document to release stream
+    if (recordingState.offscreenCreated) {
+      try {
+        await chrome.offscreen.closeDocument();
+        recordingState.offscreenCreated = false; // eslint-disable-line require-atomic-updates
+        console.log('Offscreen document closed');
+      } catch (error) {
+        console.log('Offscreen document already closed or error:', error);
+      }
+    }
 
     console.log('Recording stopped');
   } catch (error) {
@@ -154,46 +205,51 @@ async function handleRecordingExport(message) {
     // Convert data URL to blob
     const response = await fetch(message.dataUrl);
     const blob = await response.blob();
-    
+
     console.log('Blob size:', blob.size, 'bytes');
 
     // Create download URL
     const url = URL.createObjectURL(blob);
 
     // Trigger download
-    chrome.downloads.download({
-      url,
-      filename: message.filename,
-      saveAs: true,
-    }, (downloadId) => {
-      if (chrome.runtime.lastError) {
-        console.error('Download failed:', chrome.runtime.lastError);
-      } else {
-        console.log('Download started with ID:', downloadId);
-        
-        // Store recording info
-        chrome.storage.local.get(['recordings'], (result) => {
-          const recordings = result.recordings || [];
-          recordings.unshift({
-            id: downloadId,
-            filename: message.filename,
-            size: blob.size,
-            date: Date.now()
-          });
-          
-          // Keep only last 10 recordings
-          if (recordings.length > 10) {
-            recordings.pop();
-          }
-          
-          chrome.storage.local.set({ recordings });
-        });
-      }
-    });
+    chrome.downloads.download(
+      {
+        url,
+        filename: message.filename,
+        saveAs: true,
+      },
+      (downloadId) => {
+        if (chrome.runtime.lastError) {
+          console.error('Download failed:', chrome.runtime.lastError);
+        } else {
+          console.log('Download started with ID:', downloadId);
 
-    // Clean up
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
-    
+          // Store recording info
+          chrome.storage.local.get(['recordings'], (result) => {
+            const recordings = result.recordings || [];
+            recordings.unshift({
+              id: downloadId,
+              filename: message.filename,
+              size: blob.size,
+              date: Date.now(),
+            });
+
+            // Keep only last 10 recordings
+            if (recordings.length > 10) {
+              recordings.pop();
+            }
+
+            chrome.storage.local.set({ recordings });
+          });
+        }
+      }
+    );
+
+    // Clean up blob URL after download starts
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      console.log('Blob URL revoked:', url);
+    }, 5000); // 5 seconds should be enough for download to start
   } catch (error) {
     console.error('Failed to export recording:', error);
   }
@@ -205,16 +261,30 @@ async function createOffscreenDocument() {
     const path = 'offscreen.html';
     const offscreenUrl = chrome.runtime.getURL(path);
 
-    // Check if offscreen document already exists
-    const existingContexts = await chrome.runtime.getContexts({
-      contextTypes: ['OFFSCREEN_DOCUMENT'],
-      documentUrls: [offscreenUrl],
-    });
+    // Check if offscreen document already exists (Chrome 116+)
+    if (chrome.runtime.getContexts) {
+      try {
+        const existingContexts = await chrome.runtime.getContexts({
+          contextTypes: ['OFFSCREEN_DOCUMENT'],
+          documentUrls: [offscreenUrl],
+        });
 
-    if (existingContexts.length > 0) {
-      console.log('Offscreen document already exists');
-      recordingState.offscreenCreated = true;
-      return;
+        if (existingContexts.length > 0) {
+          console.log('Offscreen document already exists');
+          recordingState.offscreenCreated = true;
+          return;
+        }
+      } catch (error) {
+        console.log('getContexts API not available or error:', error);
+      }
+    }
+
+    // Try to close any existing offscreen document first
+    try {
+      await chrome.offscreen.closeDocument();
+      console.log('Closed existing offscreen document');
+    } catch (error) {
+      // Document doesn't exist, which is fine
     }
 
     // Create new offscreen document

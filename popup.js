@@ -11,7 +11,7 @@ const recordingTimer = document.getElementById('recording-timer');
 const qualitySelect = document.getElementById('quality-select');
 const audioToggle = document.getElementById('audio-toggle');
 const videoToggle = document.getElementById('video-toggle');
-const ffmpegToggle = document.getElementById('ffmpeg-toggle');
+// const ffmpegToggle = document.getElementById('ffmpeg-toggle'); // FFmpeg temporarily disabled
 const mirrorToggle = document.getElementById('mirror-toggle');
 const sizeEstimate = document.getElementById('size-estimate');
 const compressionRatio = document.getElementById('compression-ratio');
@@ -76,6 +76,26 @@ const qualityPresets = {
   },
 };
 
+// Initialize i18n
+function initializeI18n() {
+  // Get all elements with data-i18n attribute
+  const elements = document.querySelectorAll('[data-i18n]');
+  elements.forEach((element) => {
+    const messageKey = element.getAttribute('data-i18n');
+    const message = chrome.i18n.getMessage(messageKey);
+    if (message) {
+      element.textContent = message;
+    }
+  });
+
+  // Update option texts
+  const qualityOptions = qualitySelect.querySelectorAll('option');
+  qualityOptions[0].textContent = chrome.i18n.getMessage('ultraLow') || 'Ultra Low (Smallest)';
+  qualityOptions[1].textContent = chrome.i18n.getMessage('low') || 'Low';
+  qualityOptions[2].textContent = chrome.i18n.getMessage('balanced') || 'Balanced';
+  qualityOptions[3].textContent = chrome.i18n.getMessage('high') || 'High';
+}
+
 // Initialize advanced features
 async function initializeAdvancedFeatures() {
   console.log('Initializing advanced features...');
@@ -85,6 +105,9 @@ async function initializeAdvancedFeatures() {
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('Popup DOM loaded');
+
+  // Initialize i18n
+  initializeI18n();
 
   // Initialize advanced features
   await initializeAdvancedFeatures();
@@ -113,10 +136,11 @@ function setupEventListeners() {
   qualitySelect.addEventListener('change', updateQualityInfo);
   audioToggle.addEventListener('change', updateQualityInfo);
   videoToggle.addEventListener('change', updateQualityInfo);
-  ffmpegToggle.addEventListener('change', updateQualityInfo);
+  // ffmpegToggle.addEventListener('change', updateQualityInfo); // FFmpeg temporarily disabled
   mirrorToggle.addEventListener('change', updateQualityInfo);
 
-  // Advanced features event listeners
+  // Advanced features event listeners - temporarily disabled
+  /*
   const micMixToggle = document.getElementById('mic-mix-toggle');
   const micVolume = document.getElementById('mic-volume');
   const tabVolume = document.getElementById('tab-volume');
@@ -137,6 +161,7 @@ function setupEventListeners() {
   if (noiseReductionToggle) {
     noiseReductionToggle.addEventListener('change', handleNoiseReductionToggle);
   }
+  */
 
   // Settings and help links
   document.getElementById('settings-link').addEventListener('click', openSettings);
@@ -148,6 +173,17 @@ function setupEventListeners() {
 async function startRecording() {
   try {
     console.log('Starting recording...');
+
+    // Check if we're on a valid tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    if (!tab || !tab.id) {
+      throw new Error('Geçerli bir sekme bulunamadı');
+    }
+
+    if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+      throw new Error('Bu sayfada kayıt yapılamaz. Lütfen normal bir web sayfasında deneyin');
+    }
 
     const settings = getRecordingSettings();
 
@@ -164,13 +200,26 @@ async function startRecording() {
       updateRecordingState();
       startTimer();
 
+      showSuccess('Kayıt başlatıldı');
       console.log('Recording started successfully');
     } else {
-      throw new Error('Failed to start recording');
+      const errorMsg = response?.error || 'Bilinmeyen hata';
+      throw new Error(errorMsg);
     }
   } catch (error) {
     console.error('Error starting recording:', error);
-    showError(`Kayıt başlatılamadı: ${error.message}`);
+
+    // Türkçe hata mesajları
+    let errorMessage = error.message;
+    if (errorMessage.includes('Cannot capture a tab with an active stream')) {
+      errorMessage = 'Bu sekmede zaten aktif bir kayıt var. Lütfen önce diğer kaydı durdurun';
+    } else if (errorMessage.includes('Failed to start recording')) {
+      errorMessage = 'Kayıt başlatılamadı. Lütfen sayfayı yenileyin ve tekrar deneyin';
+    } else if (errorMessage.includes('tabCapture')) {
+      errorMessage = 'Kayıt izni alınamadı. Uzantı ayarlarını kontrol edin';
+    }
+
+    showError(errorMessage);
   }
 }
 
@@ -190,6 +239,13 @@ async function stopRecording() {
     updateRecordingState();
     stopTimer();
 
+    // Wait a bit before allowing new recording
+    startBtn.disabled = true;
+    setTimeout(() => {
+      startBtn.disabled = false;
+    }, 1000);
+
+    showSuccess('Kayıt durduruldu');
     console.log('Recording stopped');
   } catch (error) {
     console.error('Error stopping recording:', error);
@@ -206,7 +262,7 @@ function getRecordingSettings() {
     quality,
     audio: audioToggle.checked,
     video: videoToggle.checked,
-    useFFmpeg: ffmpegToggle.checked,
+    useFFmpeg: false, // ffmpegToggle.checked, // FFmpeg temporarily disabled
     mirrorTabAudio: mirrorToggle.checked,
     videoBitsPerSecond: preset.videoBitsPerSecond,
     audioBitsPerSecond: preset.audioBitsPerSecond,
@@ -275,7 +331,7 @@ async function loadSettings() {
     if (result.quality) qualitySelect.value = result.quality;
     if (result.audio !== undefined) audioToggle.checked = result.audio;
     if (result.video !== undefined) videoToggle.checked = result.video;
-    if (result.ffmpeg !== undefined) ffmpegToggle.checked = result.ffmpeg;
+    // if (result.ffmpeg !== undefined) ffmpegToggle.checked = result.ffmpeg; // FFmpeg temporarily disabled
     if (result.mirror !== undefined) mirrorToggle.checked = result.mirror;
 
     updateQualityInfo();
@@ -291,7 +347,7 @@ async function saveSettings() {
       quality: qualitySelect.value,
       audio: audioToggle.checked,
       video: videoToggle.checked,
-      ffmpeg: ffmpegToggle.checked,
+      // ffmpeg: ffmpegToggle.checked, // FFmpeg temporarily disabled
       mirror: mirrorToggle.checked,
     });
   } catch (error) {
@@ -323,8 +379,29 @@ function showError(message) {
 function showSuccess(message) {
   console.log('Success:', message);
 
-  recordingStatus.querySelector('.status-text').textContent = 'Başarılı';
-  recordingStatus.querySelector('.status-dot').classList.add('success');
+  // Show toast message
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #10b981;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    z-index: 10000;
+    font-size: 14px;
+    font-weight: 500;
+  `;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    if (document.body.contains(toast)) {
+      document.body.removeChild(toast);
+    }
+  }, 2000);
 
   setTimeout(() => {
     recordingStatus.querySelector('.status-text').textContent = 'Hazır';
@@ -411,7 +488,8 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   }
 });
 
-// Advanced features handlers
+// Advanced features handlers - temporarily disabled
+/*
 function handleMicMixToggle(event) {
   console.log('Mic mix toggled:', event.target.checked);
   const micControls = document.getElementById('mic-controls');
@@ -431,28 +509,30 @@ function handleTabVolumeChange(event) {
 function handleNoiseReductionToggle(event) {
   console.log('Noise reduction toggled:', event.target.checked);
 }
+*/
 
 // Load and display recent recordings
 async function loadRecentRecordings() {
   try {
     const result = await chrome.storage.local.get(['recordings']);
     const recordings = result.recordings || [];
-    
+
     const recentList = document.getElementById('recent-list');
     if (!recentList) return;
-    
+
     if (recordings.length === 0) {
       recentList.innerHTML = '<div class="no-recordings">Henüz kayıt yok</div>';
       return;
     }
-    
-    recentList.innerHTML = recordings.map(rec => {
-      const date = new Date(rec.date);
-      const dateStr = date.toLocaleDateString('tr-TR');
-      const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-      const sizeStr = formatFileSize(rec.size);
-      
-      return `
+
+    recentList.innerHTML = recordings
+      .map((rec) => {
+        const date = new Date(rec.date);
+        const dateStr = date.toLocaleDateString('tr-TR');
+        const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        const sizeStr = formatFileSize(rec.size);
+
+        return `
         <div class="recent-item">
           <div class="recent-info">
             <span class="recent-name">${rec.filename}</span>
@@ -460,7 +540,8 @@ async function loadRecentRecordings() {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
   } catch (error) {
     console.error('Failed to load recordings:', error);
   }
@@ -468,9 +549,9 @@ async function loadRecentRecordings() {
 
 // Format file size
 function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  else if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
-  else return Math.round(bytes / 1048576 * 10) / 10 + ' MB';
+  if (bytes < 1024) return `${bytes} B`;
+  else if (bytes < 1048576) return `${Math.round(bytes / 1024)} KB`;
+  else return `${Math.round((bytes / 1048576) * 10) / 10} MB`;
 }
 
 // Listen for storage changes to update recent recordings

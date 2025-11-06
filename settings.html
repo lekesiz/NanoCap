@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NanoCap Settings</title>
+    <link rel="stylesheet" href="popup.css">
+    <style>
+        body {
+            width: 500px;
+            min-height: 600px;
+        }
+        .settings-container {
+            padding: 20px;
+        }
+        .settings-group {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .settings-group h2 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 20px;
+        }
+        .settings-item {
+            margin-bottom: 15px;
+        }
+        .settings-item label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        .settings-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        .settings-item select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .save-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .save-btn:hover {
+            background: #059669;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="settings-container">
+            <a href="#" class="back-link" id="back-btn">← Back to NanoCap</a>
+            
+            <h1>NanoCap Settings</h1>
+
+            <div class="settings-group">
+                <h2>🎥 Recording Defaults</h2>
+                
+                <div class="settings-item">
+                    <label for="default-quality">Default Quality Preset</label>
+                    <select id="default-quality">
+                        <option value="ultra-low">Ultra Low (Smallest)</option>
+                        <option value="low">Low</option>
+                        <option value="balanced" selected>Balanced</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="settings-item">
+                    <label>
+                        <input type="checkbox" id="default-audio" checked>
+                        Enable audio recording by default
+                    </label>
+                </div>
+
+                <div class="settings-item">
+                    <label>
+                        <input type="checkbox" id="default-video" checked>
+                        Enable video recording by default
+                    </label>
+                </div>
+
+                <div class="settings-item">
+                    <label>
+                        <input type="checkbox" id="default-mirror" checked>
+                        Mirror tab audio by default
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h2>🌍 Language</h2>
+                
+                <div class="settings-item">
+                    <label for="language">Display Language</label>
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="tr">Türkçe</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h2>💾 Storage</h2>
+                
+                <div class="settings-item">
+                    <label>
+                        <input type="checkbox" id="auto-download" checked>
+                        Automatically download recordings
+                    </label>
+                </div>
+
+                <div class="settings-item">
+                    <label>
+                        <input type="checkbox" id="keep-history" checked>
+                        Keep recording history
+                    </label>
+                </div>
+
+                <div class="settings-item">
+                    <button id="clear-history" class="btn btn-secondary">Clear Recording History</button>
+                </div>
+            </div>
+
+            <button id="save-settings" class="save-btn">Save Settings</button>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+</html>

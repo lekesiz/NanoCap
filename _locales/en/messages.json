@@ -1,0 +1,85 @@
+{
+  "extensionName": {
+    "message": "NanoCap"
+  },
+  "extensionDescription": {
+    "message": "Ultra-low size screen recorder. Create recordings 80% smaller than others."
+  },
+  "ready": {
+    "message": "Ready"
+  },
+  "recording": {
+    "message": "Recording"
+  },
+  "recordingSettings": {
+    "message": "Recording Settings"
+  },
+  "qualityPreset": {
+    "message": "Quality Preset"
+  },
+  "ultraLow": {
+    "message": "Ultra Low (Smallest)"
+  },
+  "low": {
+    "message": "Low"
+  },
+  "balanced": {
+    "message": "Balanced"
+  },
+  "high": {
+    "message": "High"
+  },
+  "audioRecording": {
+    "message": "Audio Recording"
+  },
+  "videoRecording": {
+    "message": "Video Recording"
+  },
+  "advancedCompression": {
+    "message": "Advanced Compression (FFmpeg)"
+  },
+  "audioMirroring": {
+    "message": "Audio Mirroring"
+  },
+  "startRecording": {
+    "message": "Start Recording"
+  },
+  "stopRecording": {
+    "message": "Stop Recording"
+  },
+  "estimatedSize": {
+    "message": "Estimated Size"
+  },
+  "compression": {
+    "message": "Compression"
+  },
+  "cpuUsage": {
+    "message": "CPU Usage"
+  },
+  "codec": {
+    "message": "Codec"
+  },
+  "recentRecordings": {
+    "message": "Recent Recordings"
+  },
+  "noRecordings": {
+    "message": "No recordings yet"
+  },
+  "processing": {
+    "message": "Processing..."
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "help": {
+    "message": "Help"
+  },
+  "perMinute": {
+    "message": "~$1 MB/minute",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  }
+}

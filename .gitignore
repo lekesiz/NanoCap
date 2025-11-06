@@ -31,6 +31,7 @@ tmp/
 *.pem
 *.crx
 *.zip
+!nanocap-v*.zip  # Keep versioned releases
 
 # FFmpeg.wasm cache
 ffmpeg-core/

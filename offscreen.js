@@ -5,7 +5,7 @@ console.log('NanoCap Offscreen Document initialized');
 
 // Recording state
 let recorder = null;
-let chunks = [];
+const chunks = []; // Use const to avoid reassignment
 let mimeChosen = 'video/webm';
 let stream = null;
 let audioContext = null;
@@ -70,7 +70,7 @@ async function startRecording({ streamId, options }) {
 
     // Select optimal MIME type
     mimeChosen = pickMimeType();
-    chunks = [];
+    chunks.length = 0; // Clear array without reassignment
 
     // Configure MediaRecorder with aggressive bitrates for small file size
     recorder = new MediaRecorder(stream, {
@@ -110,6 +110,9 @@ async function startRecording({ streamId, options }) {
         });
 
         console.log('Export request sent:', filename);
+
+        // Clean up blob to prevent memory leak
+        chunks.length = 0; // eslint-disable-line require-atomic-updates
       } catch (error) {
         console.error('Error processing recording:', error);
 
@@ -155,6 +158,9 @@ function stopRecording() {
     } else {
       console.warn('No active recording to stop');
     }
+
+    // Clean up immediately to release stream
+    cleanup();
   } catch (error) {
     console.error('Error stopping recording:', error);
   }
@@ -165,7 +171,7 @@ function cleanup() {
   console.log('Cleaning up resources...');
 
   recorder = null;
-  chunks = [];
+  chunks.length = 0; // Clear array without reassignment
 
   if (stream) {
     try {
@@ -264,6 +270,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       stopRecording();
       sendResponse({ success: true });
       break;
+
+    case 'START_RECORDING':
+      // Handle message from popup
+      console.log('Received START_RECORDING from popup, ignoring in offscreen');
+      return false; // Let service worker handle this
 
     case 'REC_START':
       startRecording(message.payload);
