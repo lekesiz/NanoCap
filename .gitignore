@@ -44,3 +44,4 @@ test-recordings/
 *.webm
 *.mp4
 *.wav
+coverage/

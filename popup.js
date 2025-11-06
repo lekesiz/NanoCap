@@ -16,7 +16,7 @@ const mirrorToggle = document.getElementById('mirror-toggle');
 const sizeEstimate = document.getElementById('size-estimate');
 const compressionRatio = document.getElementById('compression-ratio');
 const cpuEstimate = document.getElementById('cpu-estimate');
-const recentList = document.getElementById('recent-list');
+// const recentList = document.getElementById('recent-list'); // Future feature: Recent recordings list
 const progressContainer = document.getElementById('progress-container');
 const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
@@ -25,11 +25,11 @@ const progressText = document.getElementById('progress-text');
 let isRecording = false;
 let recordingStartTime = null;
 
-// Advanced features integration
-const advancedFFmpegProcessor = null;
-const av1CodecProcessor = null;
-const advancedAudioProcessor = null;
-const audioLevelInterval = null;
+// Advanced features integration (placeholders for v0.4.0)
+// const advancedFFmpegProcessor = null; // Future: Advanced FFmpeg processing
+// const av1CodecProcessor = null; // Future: AV1 codec support
+// const advancedAudioProcessor = null; // Future: Audio mixing
+// const audioLevelInterval = null; // Future: Audio level monitoring
 let timerInterval = null;
 
 // Quality presets with file size estimates
@@ -363,7 +363,7 @@ function openGitHub() {
 }
 
 // Listen for messages from service worker
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   console.log('Popup received message:', message.type);
 
   switch (message.type) {
@@ -430,3 +430,20 @@ function handleNoiseReductionToggle(event) {
 }
 
 console.log('NanoCap Popup ready');
+
+// Export for testing (only in Node.js environment)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    qualityPresets,
+    getRecordingSettings,
+    updateRecordingState,
+    showError,
+    startRecording,
+    stopRecording,
+    // Test helpers to set internal state
+    __setRecordingState: (value) => {
+      isRecording = value;
+    },
+    __getRecordingState: () => isRecording,
+  };
+}

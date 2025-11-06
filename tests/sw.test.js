@@ -2,6 +2,9 @@
 
 describe('NanoCap Service Worker Tests', () => {
   beforeEach(() => {
+    // Reset modules to ensure fresh require
+    jest.resetModules();
+
     // Mock chrome API
     global.chrome = {
       runtime: {
@@ -20,7 +23,7 @@ describe('NanoCap Service Worker Tests', () => {
         download: jest.fn()
       }
     };
-    
+
     // Mock URL API
     global.URL = {
       createObjectURL: jest.fn(() => 'blob:mock-url')
@@ -143,14 +146,17 @@ describe('NanoCap Service Worker Tests', () => {
 
   describe('Cleanup', () => {
     test('should cleanup on extension suspend', () => {
-      require('../sw.js');
-      
+      const { recordingState } = require('../sw.js');
+
+      // Set offscreen as created to trigger cleanup
+      recordingState.offscreenCreated = true;
+
       // Get the suspend handler
       const suspendHandler = chrome.runtime.onSuspend.addListener.mock.calls[0][0];
-      
+
       // Simulate suspension
       suspendHandler();
-      
+
       // Should attempt cleanup
       expect(chrome.offscreen.closeDocument).toHaveBeenCalled();
     });

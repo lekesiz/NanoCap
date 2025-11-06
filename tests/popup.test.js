@@ -2,6 +2,9 @@
 
 describe('NanoCap Popup Tests', () => {
   beforeEach(() => {
+    // Reset modules to ensure fresh require
+    jest.resetModules();
+
     // Setup DOM elements
     document.body.innerHTML = `
       <div id="start-btn"></div>
@@ -25,7 +28,7 @@ describe('NanoCap Popup Tests', () => {
       <div id="progress-fill"></div>
       <div id="progress-text"></div>
     `;
-    
+
     // Mock chrome API
     global.chrome = {
       runtime: {
@@ -88,32 +91,32 @@ describe('NanoCap Popup Tests', () => {
 
   describe('UI State Management', () => {
     test('should update UI when recording starts', () => {
-      const { updateRecordingState } = require('../popup.js');
-      
-      // Set recording state
-      global.isRecording = true;
+      const { updateRecordingState, __setRecordingState } = require('../popup.js');
+
+      // Set recording state using test helper
+      __setRecordingState(true);
       updateRecordingState();
-      
+
       const startBtn = document.getElementById('start-btn');
       const stopBtn = document.getElementById('stop-btn');
       const statusDot = document.querySelector('.status-dot');
-      
+
       expect(startBtn.classList.contains('hidden')).toBe(true);
       expect(stopBtn.classList.contains('hidden')).toBe(false);
       expect(statusDot.classList.contains('recording')).toBe(true);
     });
-    
+
     test('should update UI when recording stops', () => {
-      const { updateRecordingState } = require('../popup.js');
-      
-      // Set recording state
-      global.isRecording = false;
+      const { updateRecordingState, __setRecordingState } = require('../popup.js');
+
+      // Set recording state using test helper
+      __setRecordingState(false);
       updateRecordingState();
-      
+
       const startBtn = document.getElementById('start-btn');
       const stopBtn = document.getElementById('stop-btn');
       const statusDot = document.querySelector('.status-dot');
-      
+
       expect(startBtn.classList.contains('hidden')).toBe(false);
       expect(stopBtn.classList.contains('hidden')).toBe(true);
       expect(statusDot.classList.contains('recording')).toBe(false);

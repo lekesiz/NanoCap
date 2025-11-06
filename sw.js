@@ -12,12 +12,12 @@ const recordingState = {
   offscreenCreated: false,
 };
 
-// Performance monitoring
-const performanceMetrics = {
-  startTime: null,
-  memoryUsage: 0,
-  cpuUsage: 0,
-};
+// Performance monitoring (placeholder for v0.4.0)
+// const performanceMetrics = {
+//   startTime: null,
+//   memoryUsage: 0,
+//   cpuUsage: 0,
+// };
 
 // Message handling from popup and offscreen
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -221,3 +221,15 @@ chrome.runtime.onSuspend.addListener(() => {
 });
 
 console.log('NanoCap Service Worker ready');
+
+// Export for testing (only in Node.js environment)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    recordingState,
+    createOffscreenDocument,
+    compressRecording,
+    handleDownloadRecording,
+    handleStartRecording,
+    handleStopRecording,
+  };
+}
