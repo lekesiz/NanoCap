@@ -118,11 +118,25 @@ NanoCap, Google Chrome için geliştirilmiş, tarayıcı içi aktiviteleri (sekm
 
 ## 🆕 v0.3.1 Güncellemeleri
 
-- 🐛 **Kayıt Sorunu Düzeltildi**: Tab capture stream ID implementasyonu düzeltildi
-- 🎨 **UI İyileştirmeleri**: Popup boyutları ve okunabilirlik artırıldı
-- 📝 **Kayıt Geçmişi**: Son 10 kayıt popup'ta gösteriliyor
-- 🔧 **Mesaj İşleme**: Service worker ve offscreen document arası iletişim düzeltildi
-- 💾 **Storage Yönetimi**: Kayıtlar otomatik olarak takip ediliyor
+### Önemli Düzeltmeler
+- 🐛 **Kayıt Sorunu Tamamen Çözüldü**: Tab capture stream yönetimi ve otomatik temizlik
+- 🌍 **Çoklu Dil Desteği**: Türkçe ve İngilizce tam destek (i18n)
+- ⚙️ **Ayarlar Sayfası**: Kullanıcı tercihleri için yeni settings.html
+- 🔒 **Chrome Web Store Uyumluluğu**: Host permissions daraltıldı
+- 💾 **Bellek Yönetimi**: Blob URL'ler düzgün temizleniyor
+
+### Teknik İyileştirmeler
+- ✅ Build scriptleri düzeltildi ve optimize edildi
+- ✅ ESLint hataları temizlendi
+- ✅ Race condition sorunları giderildi
+- ✅ Offscreen document yaşam döngüsü iyileştirildi
+- ✅ Hata mesajları Türkçeleştirildi
+
+### UI/UX Güncellemeleri
+- 🎨 **Modern Tasarım**: Temiz, minimalist arayüz
+- 📏 **Popup Boyutları**: 400x550px optimal görüntüleme
+- 🎯 **Gelişmiş Kontroller**: Toast bildirimler ve durum göstergeleri
+- 🚫 **Eksik Özellikler Gizlendi**: FFmpeg ve mikrofon özellikleri geçici olarak devre dışı
 
 ## 🏗️ Teknik Mimari
 
