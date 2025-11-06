@@ -447,9 +447,9 @@ Accent: #F59E0B (Orange)
 
 ### Links
 ```
-□ Homepage URL (GitHub) ✅
-□ Support URL (GitHub Issues) ✅
-□ Privacy Policy URL (PRIVACY.md) ⚠️ NEEDS PUBLIC URL
+✅ Homepage URL (GitHub)
+✅ Support URL (GitHub Issues)
+✅ Privacy Policy URL: https://github.com/lekesiz/NanoCap/blob/main/PRIVACY.md
 ```
 
 ### Permissions

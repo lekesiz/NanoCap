@@ -259,6 +259,8 @@ NanoCap/
 - `activeTab` - Aktif sekmeyi algıla
 - `scripting` - İleri özellikler için
 
+**Gizlilik Politikası:** [PRIVACY.md](https://github.com/lekesiz/NanoCap/blob/main/PRIVACY.md)
+
 ---
 
 ## 🐛 Bilinen Sınırlamalar

@@ -150,7 +150,7 @@ class FFmpegProcessor {
   setupProgressMonitoring() {
     if (this.ffmpeg && this.progressCallback) {
       // Monitor FFmpeg logs for progress
-      const originalLog = this.ffmpeg.setLogger;
+      // const originalLog = this.ffmpeg.setLogger; // Future: Store original logger for restoration
       this.ffmpeg.setLogger(({ type, message }) => {
         if (type === 'fferr' && message.includes('time=')) {
           // Extract time information from FFmpeg output

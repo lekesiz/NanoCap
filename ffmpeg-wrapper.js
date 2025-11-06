@@ -23,7 +23,7 @@ class FFmpegWrapper {
 
       // Import FFmpeg dynamically
       const { FFmpeg } = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/esm/index.js');
-      const { fetchFile } = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
+      // const { fetchFile } = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js'); // Future: For fetching remote files
 
       this.ffmpeg = new FFmpeg();
       this.ffmpeg.on('log', ({ message }) => {
