@@ -4,32 +4,34 @@
 console.log('NanoCap Service Worker initialized');
 
 // Service Worker lifecycle management
-let recordingState = {
+const recordingState = {
   isRecording: false,
   mediaRecorder: null,
   chunks: [],
   startTime: null,
-  offscreenCreated: false
+  offscreenCreated: false,
 };
 
 // Performance monitoring
-let performanceMetrics = {
+const performanceMetrics = {
   startTime: null,
   memoryUsage: 0,
-  cpuUsage: 0
+  cpuUsage: 0,
 };
 
 // Message handling from popup and offscreen
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('SW received message:', message.type);
-  
+
   switch (message.type) {
     case 'START_RECORDING':
-      handleStartRecording(message.data).then(() => {
-        sendResponse({ success: true });
-      }).catch(error => {
-        sendResponse({ success: false, error: error.message });
-      });
+      handleStartRecording(message.data)
+        .then(() => {
+          sendResponse({ success: true });
+        })
+        .catch((error) => {
+          sendResponse({ success: false, error: error.message });
+        });
       break;
     case 'STOP_RECORDING':
       handleStopRecording();
@@ -41,7 +43,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       handleDownloadRecording(message.data);
       break;
   }
-  
+
   return true; // Keep message channel open for async response
 });
 
@@ -49,10 +51,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleStartRecording(data) {
   try {
     console.log('Starting recording with settings:', data);
-    
+
     // Create offscreen document for secure recording
     await createOffscreenDocument();
-    
+
     // Send recording parameters to offscreen
     chrome.runtime.sendMessage({
       type: 'RECORDING_CONFIG',
@@ -60,15 +62,14 @@ async function handleStartRecording(data) {
         quality: data.quality || 'balanced',
         audio: data.audio !== false,
         video: data.video !== false,
-        compression: data.compression || 'vp9'
-      }
+        compression: data.compression || 'vp9',
+      },
     });
-    
+
     recordingState.isRecording = true;
     recordingState.startTime = Date.now();
-    
+
     console.log('Recording started successfully');
-    
   } catch (error) {
     console.error('Failed to start recording:', error);
     recordingState.isRecording = false;
@@ -79,16 +80,15 @@ async function handleStartRecording(data) {
 async function handleStopRecording() {
   try {
     console.log('Stopping recording...');
-    
+
     recordingState.isRecording = false;
-    
+
     // Send stop signal to offscreen
     chrome.runtime.sendMessage({
-      type: 'STOP_RECORDING_SIGNAL'
+      type: 'STOP_RECORDING_SIGNAL',
     });
-    
+
     console.log('Recording stopped');
-    
   } catch (error) {
     console.error('Failed to stop recording:', error);
   }
@@ -98,23 +98,22 @@ async function handleStopRecording() {
 async function handleDownloadRecording(data) {
   try {
     console.log('Processing recording for download:', data.blob.size, 'bytes');
-    
+
     // Two-stage compression strategy
     const compressedBlob = await compressRecording(data.blob, data.settings);
-    
+
     // Create download URL
     const url = URL.createObjectURL(compressedBlob);
     const filename = `nanocap-recording-${Date.now()}.webm`;
-    
+
     // Trigger download
     chrome.downloads.download({
-      url: url,
-      filename: filename,
-      saveAs: true
+      url,
+      filename,
+      saveAs: true,
     });
-    
+
     console.log('Download initiated:', filename);
-    
   } catch (error) {
     console.error('Failed to download recording:', error);
   }
@@ -125,29 +124,29 @@ async function createOffscreenDocument() {
   try {
     const path = 'offscreen.html';
     const offscreenUrl = chrome.runtime.getURL(path);
-    
+
     // Check if offscreen document already exists
     const existingContexts = await chrome.runtime.getContexts({
       contextTypes: ['OFFSCREEN_DOCUMENT'],
-      documentUrls: [offscreenUrl]
+      documentUrls: [offscreenUrl],
     });
-    
+
     if (existingContexts.length > 0) {
       console.log('Offscreen document already exists');
       recordingState.offscreenCreated = true;
       return;
     }
-    
+
     // Create new offscreen document
     await chrome.offscreen.createDocument({
       url: path,
       reasons: [chrome.offscreen.Reason.USER_MEDIA],
-      justification: 'Recording browser content with MediaRecorder API for ultra-low filesize optimization'
+      justification:
+        'Recording browser content with MediaRecorder API for ultra-low filesize optimization',
     });
-    
+
     recordingState.offscreenCreated = true;
     console.log('Offscreen document created successfully');
-    
   } catch (error) {
     console.error('Failed to create offscreen document:', error);
     throw error;
@@ -157,10 +156,10 @@ async function createOffscreenDocument() {
 // Two-stage compression: Real-time + FFmpeg post-processing
 async function compressRecording(blob, settings) {
   console.log('Starting compression pipeline...');
-  
+
   // Stage 1: Real-time compression (already done by MediaRecorder)
   let compressedBlob = blob;
-  
+
   // Stage 2: FFmpeg.wasm post-processing for ultra-low filesize
   if (settings.useFFmpeg !== false) {
     try {
@@ -170,29 +169,52 @@ async function compressRecording(blob, settings) {
       console.warn('FFmpeg compression failed, using original:', error);
     }
   }
-  
+
   return compressedBlob;
 }
 
-// FFmpeg.wasm compression worker
+// FFmpeg.wasm compression via offscreen document
 async function ffmpegCompress(blob, settings) {
-  // This would integrate with FFmpeg.wasm for advanced compression
-  // For now, return the original blob
-  // TODO: Implement FFmpeg.wasm integration
-  return blob;
+  try {
+    console.log('Requesting FFmpeg compression from offscreen document...');
+
+    // Send compression request to offscreen document
+    const response = await chrome.runtime.sendMessage({
+      target: 'offscreen',
+      type: 'COMPRESS_VIDEO',
+      blob,
+      settings: {
+        crf: settings.crf || 35,
+        codec: settings.codec || 'vp9',
+        audioBitrate: settings.audioBitrate || '64k',
+      },
+    });
+
+    if (response && response.success && response.blob) {
+      console.log('FFmpeg compression successful');
+      return response.blob;
+    } else {
+      console.warn('FFmpeg compression failed, using original blob');
+      return blob;
+    }
+  } catch (error) {
+    console.error('FFmpeg compression error:', error);
+    // Return original blob if compression fails
+    return blob;
+  }
 }
 
 // Cleanup on extension unload
 chrome.runtime.onSuspend.addListener(() => {
   console.log('NanoCap Service Worker suspending...');
-  
+
   if (recordingState.isRecording) {
     handleStopRecording();
   }
-  
+
   // Clean up offscreen document
   if (recordingState.offscreenCreated) {
-    chrome.offscreen.closeDocument().catch(error => {
+    chrome.offscreen.closeDocument().catch((error) => {
       console.log('Offscreen document already closed or error:', error);
     });
   }

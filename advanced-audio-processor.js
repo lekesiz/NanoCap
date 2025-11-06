@@ -14,7 +14,7 @@ class AdvancedAudioProcessor {
       tabAudioFilter: null,
       compressor: null,
       limiter: null,
-      mixer: null
+      mixer: null,
     };
     this.audioSettings = {
       microphoneVolume: 1.0,
@@ -23,7 +23,7 @@ class AdvancedAudioProcessor {
       tabAudioMuted: false,
       noiseReduction: false,
       echoCancellation: true,
-      autoGainControl: true
+      autoGainControl: true,
     };
     this.isProcessing = false;
   }
@@ -34,12 +34,11 @@ class AdvancedAudioProcessor {
       // Create audio context
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
         sampleRate: 48000,
-        latencyHint: 'interactive'
+        latencyHint: 'interactive',
       });
 
       console.log('Advanced Audio Processor initialized');
       return true;
-
     } catch (error) {
       console.error('Failed to initialize audio processor:', error);
       throw error;
@@ -55,15 +54,14 @@ class AdvancedAudioProcessor {
           noiseSuppression: options.noiseSuppression !== false,
           autoGainControl: options.autoGainControl !== false,
           sampleRate: 48000,
-          channelCount: 1
-        }
+          channelCount: 1,
+        },
       };
 
       this.microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
       console.log('Microphone capture started');
 
       return this.microphoneStream;
-
     } catch (error) {
       console.error('Failed to start microphone capture:', error);
       throw error;
@@ -77,14 +75,13 @@ class AdvancedAudioProcessor {
         audio: {
           mandatory: {
             chromeMediaSource: 'tab',
-            chromeMediaSourceId: streamId
-          }
-        }
+            chromeMediaSourceId: streamId,
+          },
+        },
       });
 
       console.log('Tab audio capture started');
       return this.tabAudioStream;
-
     } catch (error) {
       console.error('Failed to start tab audio capture:', error);
       throw error;
@@ -130,7 +127,6 @@ class AdvancedAudioProcessor {
 
       console.log('Mixed audio stream created');
       return this.mixedStream;
-
     } catch (error) {
       console.error('Failed to create mixed stream:', error);
       throw error;
@@ -254,7 +250,7 @@ class AdvancedAudioProcessor {
     return {
       microphone: microphoneLevel,
       tabAudio: tabAudioLevel,
-      mixed: mixedLevel
+      mixed: mixedLevel,
     };
   }
 
@@ -287,7 +283,6 @@ class AdvancedAudioProcessor {
       }
 
       console.log('Audio effects applied:', effects);
-
     } catch (error) {
       console.error('Failed to apply audio effects:', error);
     }
@@ -345,7 +340,7 @@ class AdvancedAudioProcessor {
     const filters = [];
 
     // Create multiple band filters
-    eqSettings.bands.forEach(band => {
+    eqSettings.bands.forEach((band) => {
       const filter = this.audioContext.createBiquadFilter();
       filter.type = band.type;
       filter.frequency.value = band.frequency;
@@ -356,7 +351,7 @@ class AdvancedAudioProcessor {
 
     // Chain filters
     let currentNode = this.audioNodes.mixer;
-    filters.forEach(filter => {
+    filters.forEach((filter) => {
       currentNode.connect(filter);
       currentNode = filter;
     });
@@ -380,7 +375,7 @@ class AdvancedAudioProcessor {
   // Update audio settings
   updateAudioSettings(newSettings) {
     this.audioSettings = { ...this.audioSettings, ...newSettings };
-    
+
     // Apply settings to audio nodes
     if (newSettings.microphoneVolume !== undefined) {
       this.setMicrophoneVolume(newSettings.microphoneVolume);
@@ -405,12 +400,12 @@ class AdvancedAudioProcessor {
 
     // Stop all tracks
     if (this.microphoneStream) {
-      this.microphoneStream.getTracks().forEach(track => track.stop());
+      this.microphoneStream.getTracks().forEach((track) => track.stop());
       this.microphoneStream = null;
     }
 
     if (this.tabAudioStream) {
-      this.tabAudioStream.getTracks().forEach(track => track.stop());
+      this.tabAudioStream.getTracks().forEach((track) => track.stop());
       this.tabAudioStream = null;
     }
 
@@ -428,7 +423,7 @@ class AdvancedAudioProcessor {
       tabAudioFilter: null,
       compressor: null,
       limiter: null,
-      mixer: null
+      mixer: null,
     };
 
     this.mixedStream = null;
@@ -443,7 +438,7 @@ class AdvancedAudioProcessor {
       hasTabAudio: !!this.tabAudioStream,
       hasMixedStream: !!this.mixedStream,
       audioContextState: this.audioContext?.state,
-      settings: this.audioSettings
+      settings: this.audioSettings,
     };
   }
 }

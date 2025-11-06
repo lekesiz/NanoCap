@@ -31,8 +31,8 @@ class AV1CodecProcessor {
           lagInFrames: 16,
           autoAltRef: 1,
           arnrMaxFrames: 7,
-          arnrStrength: 5
-        }
+          arnrStrength: 5,
+        },
       },
       'av1-balanced': {
         name: 'AV1 Balanced',
@@ -54,8 +54,8 @@ class AV1CodecProcessor {
           lagInFrames: 12,
           autoAltRef: 1,
           arnrMaxFrames: 5,
-          arnrStrength: 3
-        }
+          arnrStrength: 3,
+        },
       },
       'av1-high-quality': {
         name: 'AV1 High Quality',
@@ -77,8 +77,8 @@ class AV1CodecProcessor {
           lagInFrames: 8,
           autoAltRef: 1,
           arnrMaxFrames: 3,
-          arnrStrength: 2
-        }
+          arnrStrength: 2,
+        },
       },
       'av1-presentation': {
         name: 'AV1 Presentation',
@@ -100,9 +100,9 @@ class AV1CodecProcessor {
           lagInFrames: 4,
           autoAltRef: 0,
           arnrMaxFrames: 0,
-          arnrStrength: 0
-        }
-      }
+          arnrStrength: 0,
+        },
+      },
     };
   }
 
@@ -113,19 +113,21 @@ class AV1CodecProcessor {
       mp4AV1: false,
       hardwareAcceleration: false,
       browserSupport: false,
-      overallSupport: false
+      overallSupport: false,
     };
 
     try {
       // Check WebM AV1 support
-      supportInfo.webmAV1 = MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.08M.08') ||
-                           MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.05M.08') ||
-                           MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.04M.08');
+      supportInfo.webmAV1 =
+        MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.08M.08') ||
+        MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.05M.08') ||
+        MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.04M.08');
 
       // Check MP4 AV1 support
-      supportInfo.mp4AV1 = MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.08M.08') ||
-                           MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.05M.08') ||
-                           MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.04M.08');
+      supportInfo.mp4AV1 =
+        MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.08M.08') ||
+        MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.05M.08') ||
+        MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.04M.08');
 
       // Check browser support
       supportInfo.browserSupport = this.checkBrowserAV1Support();
@@ -141,7 +143,6 @@ class AV1CodecProcessor {
 
       console.log('AV1 Support Check:', supportInfo);
       return supportInfo;
-
     } catch (error) {
       console.error('Error checking AV1 support:', error);
       this.isSupported = false;
@@ -152,7 +153,7 @@ class AV1CodecProcessor {
   // Check browser-specific AV1 support
   checkBrowserAV1Support() {
     const userAgent = navigator.userAgent.toLowerCase();
-    
+
     // Chrome 100+ has AV1 support
     const chromeMatch = userAgent.match(/chrome\/(\d+)/);
     if (chromeMatch && parseInt(chromeMatch[1]) >= 100) {
@@ -184,13 +185,13 @@ class AV1CodecProcessor {
           width: 1280,
           height: 720,
           bitrate: 1000000,
-          framerate: 30
+          framerate: 30,
         };
 
         try {
           const encoder = new VideoEncoder({
             output: () => {},
-            error: () => {}
+            error: () => {},
           });
 
           await encoder.configure(config);
@@ -212,30 +213,30 @@ class AV1CodecProcessor {
   // Get optimal AV1 preset based on content and system capabilities
   getOptimalAV1Preset(contentType, systemCapabilities) {
     const recommendations = {
-      'presentation': {
+      presentation: {
         fast: 'av1-presentation',
         balanced: 'av1-balanced',
-        quality: 'av1-high-quality'
+        quality: 'av1-high-quality',
       },
-      'tutorial': {
+      tutorial: {
         fast: 'av1-balanced',
         balanced: 'av1-balanced',
-        quality: 'av1-high-quality'
+        quality: 'av1-high-quality',
       },
-      'gaming': {
+      gaming: {
         fast: 'av1-balanced',
         balanced: 'av1-high-quality',
-        quality: 'av1-high-quality'
+        quality: 'av1-high-quality',
       },
-      'meeting': {
+      meeting: {
         fast: 'av1-presentation',
         balanced: 'av1-presentation',
-        quality: 'av1-balanced'
-      }
+        quality: 'av1-balanced',
+      },
     };
 
     const contentRecommendations = recommendations[contentType] || recommendations['tutorial'];
-    
+
     // Choose based on system capabilities
     if (systemCapabilities.highPerformance) {
       return contentRecommendations.quality;
@@ -248,14 +249,20 @@ class AV1CodecProcessor {
 
   // Build AV1-specific FFmpeg command
   buildAV1Command(preset, options = {}) {
-    const av1Specific = preset.av1Specific;
+    const { av1Specific } = preset;
     const command = [
-      '-i', 'input.webm',
-      '-c:v', preset.videoCodec,
-      '-crf', preset.crf.toString(),
-      '-preset', preset.preset,
-      '-c:a', preset.audioCodec,
-      '-b:a', preset.audioBitrate
+      '-i',
+      'input.webm',
+      '-c:v',
+      preset.videoCodec,
+      '-crf',
+      preset.crf.toString(),
+      '-preset',
+      preset.preset,
+      '-c:a',
+      preset.audioCodec,
+      '-b:a',
+      preset.audioBitrate,
     ];
 
     // Add AV1-specific parameters
@@ -302,13 +309,13 @@ class AV1CodecProcessor {
       expectedBenefits: {
         sizeReduction: '40-80% smaller files',
         qualityImprovement: 'Better quality at same bitrate',
-        futureProof: 'Next-generation standard'
+        futureProof: 'Next-generation standard',
       },
       requirements: {
         browser: 'Chrome 100+, Firefox 93+, Safari 16+',
         hardware: 'Multi-core CPU recommended',
-        processing: 'Slower encoding, faster decoding'
-      }
+        processing: 'Slower encoding, faster decoding',
+      },
     };
   }
 
@@ -333,26 +340,25 @@ class AV1CodecProcessor {
     const results = {
       av1: null,
       vp9: null,
-      comparison: null
+      comparison: null,
     };
 
     try {
       // This would require running both codecs
       // For now, return estimated comparison
       const estimatedSize = inputBlob.size;
-      
+
       results.comparison = {
         av1Size: estimatedSize * 0.3, // 70% reduction
         vp9Size: estimatedSize * 0.5, // 50% reduction
         av1Advantage: 0.4, // 40% smaller than VP9
         processingTime: {
           av1: duration * 3, // 3x slower encoding
-          vp9: duration * 1  // Baseline
-        }
+          vp9: duration * 1, // Baseline
+        },
       };
 
       return results;
-
     } catch (error) {
       console.error('Error comparing compression:', error);
       throw error;
@@ -388,17 +394,17 @@ class AV1CodecProcessor {
     return {
       recommended: this.isAV1Recommended(),
       scenarios: {
-        'presentation': 'AV1 Presentation - Fast encoding, small files',
-        'tutorial': 'AV1 Balanced - Good quality, reasonable size',
-        'gaming': 'AV1 High Quality - Best quality, larger files',
-        'meeting': 'AV1 Presentation - Optimized for speech'
+        presentation: 'AV1 Presentation - Fast encoding, small files',
+        tutorial: 'AV1 Balanced - Good quality, reasonable size',
+        gaming: 'AV1 High Quality - Best quality, larger files',
+        meeting: 'AV1 Presentation - Optimized for speech',
       },
       tips: [
         'AV1 encoding is slower but produces smaller files',
         'Use AV1 for content that will be viewed multiple times',
         'AV1 is ideal for streaming and archival',
-        'Consider VP9 for real-time applications'
-      ]
+        'Consider VP9 for real-time applications',
+      ],
     };
   }
 }

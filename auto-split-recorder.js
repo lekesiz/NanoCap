@@ -9,7 +9,7 @@ class AutoSplitRecorder {
       timeInterval: 30, // minutes
       sizeLimit: 100, // MB
       overlapDuration: 5, // seconds overlap between files
-      maxFiles: 10 // maximum number of split files
+      maxFiles: 10, // maximum number of split files
     };
     this.currentFile = 1;
     this.totalFiles = 0;
@@ -30,7 +30,6 @@ class AutoSplitRecorder {
 
       console.log('Auto-split recorder initialized with settings:', this.splitSettings);
       return true;
-
     } catch (error) {
       console.error('Failed to initialize auto-split recorder:', error);
       throw error;
@@ -48,16 +47,17 @@ class AutoSplitRecorder {
       this.lastSplitTime = this.recordingStartTime;
       this.isSplitting = true;
 
-      console.log(`Starting auto-split recording (File ${this.currentFile}/${this.splitSettings.maxFiles})`);
+      console.log(
+        `Starting auto-split recording (File ${this.currentFile}/${this.splitSettings.maxFiles})`
+      );
 
       // Start first recording segment
       const recorder = await this.startRecordingSegment(stream, options);
-      
+
       // Set up auto-split monitoring
       this.setupAutoSplitMonitoring(recorder, stream, options);
 
       return recorder;
-
     } catch (error) {
       console.error('Failed to start auto-split recording:', error);
       throw error;
@@ -68,18 +68,18 @@ class AutoSplitRecorder {
   async startRecordingSegment(stream, options) {
     const segmentOptions = {
       ...options,
-      filename: this.generateSegmentFilename()
+      filename: this.generateSegmentFilename(),
     };
 
     // Create MediaRecorder for this segment
     const recorder = new MediaRecorder(stream, {
       mimeType: options.mimeType || 'video/webm;codecs=vp9,opus',
       videoBitsPerSecond: options.videoBitsPerSecond,
-      audioBitsPerSecond: options.audioBitsPerSecond
+      audioBitsPerSecond: options.audioBitsPerSecond,
     });
 
     const chunks = [];
-    
+
     recorder.ondataavailable = (event) => {
       if (event.data && event.data.size > 0) {
         chunks.push(event.data);
@@ -90,10 +90,9 @@ class AutoSplitRecorder {
       try {
         const blob = new Blob(chunks, { type: segmentOptions.mimeType });
         await this.saveSegment(blob, segmentOptions.filename);
-        
+
         // Notify completion
         this.notifySegmentComplete(segmentOptions.filename, blob.size);
-        
       } catch (error) {
         console.error('Failed to save segment:', error);
         this.notifyError(error);
@@ -113,7 +112,7 @@ class AutoSplitRecorder {
       }
 
       const shouldSplit = this.shouldSplitFile();
-      
+
       if (shouldSplit) {
         this.splitRecording(recorder, stream, options);
         clearInterval(checkInterval);
@@ -171,13 +170,12 @@ class AutoSplitRecorder {
       // Start next segment
       this.currentFile++;
       this.lastSplitTime = Date.now();
-      
+
       const nextRecorder = await this.startRecordingSegment(stream, options);
       this.setupAutoSplitMonitoring(nextRecorder, stream, options);
 
       // Notify split
       this.notifySplitComplete(this.currentFile);
-
     } catch (error) {
       console.error('Failed to split recording:', error);
       this.notifyError(error);
@@ -186,7 +184,7 @@ class AutoSplitRecorder {
 
   // Wait for overlap duration
   async waitForOverlap() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(resolve, this.splitSettings.overlapDuration * 1000);
     });
   }
@@ -203,26 +201,27 @@ class AutoSplitRecorder {
     try {
       // Convert blob to data URL
       const dataUrl = await this.blobToDataURL(blob);
-      
+
       // Send to service worker for download
       chrome.runtime.sendMessage({
         type: 'SPLIT_SEGMENT_READY',
-        dataUrl: dataUrl,
-        filename: filename,
+        dataUrl,
+        filename,
         segmentNumber: this.currentFile,
-        totalSegments: this.splitSettings.maxFiles
+        totalSegments: this.splitSettings.maxFiles,
       });
 
       // Store segment info
       this.splitFiles.push({
-        filename: filename,
+        filename,
         size: blob.size,
         segmentNumber: this.currentFile,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
-      console.log(`Segment ${this.currentFile} saved: ${filename} (${(blob.size / 1024 / 1024).toFixed(2)} MB)`);
-
+      console.log(
+        `Segment ${this.currentFile} saved: ${filename} (${(blob.size / 1024 / 1024).toFixed(2)} MB)`
+      );
     } catch (error) {
       console.error('Failed to save segment:', error);
       throw error;
@@ -243,9 +242,9 @@ class AutoSplitRecorder {
   stopAutoSplitRecording() {
     this.isSplitting = false;
     this.totalFiles = this.currentFile;
-    
+
     console.log(`Auto-split recording stopped. Total files: ${this.totalFiles}`);
-    
+
     // Notify completion
     this.notifyRecordingComplete();
   }
@@ -254,15 +253,15 @@ class AutoSplitRecorder {
   getSplitStatistics() {
     const totalSize = this.splitFiles.reduce((sum, file) => sum + file.size, 0);
     const averageSize = this.splitFiles.length > 0 ? totalSize / this.splitFiles.length : 0;
-    
+
     return {
       totalFiles: this.splitFiles.length,
-      totalSize: totalSize,
-      averageSize: averageSize,
+      totalSize,
+      averageSize,
       currentFile: this.currentFile,
       isSplitting: this.isSplitting,
       settings: this.splitSettings,
-      files: this.splitFiles
+      files: this.splitFiles,
     };
   }
 
@@ -276,10 +275,10 @@ class AutoSplitRecorder {
   notifySegmentComplete(filename, size) {
     chrome.runtime.sendMessage({
       type: 'SEGMENT_COMPLETE',
-      filename: filename,
-      size: size,
+      filename,
+      size,
       segmentNumber: this.currentFile,
-      totalSegments: this.splitSettings.maxFiles
+      totalSegments: this.splitSettings.maxFiles,
     });
   }
 
@@ -287,8 +286,8 @@ class AutoSplitRecorder {
   notifySplitComplete(segmentNumber) {
     chrome.runtime.sendMessage({
       type: 'SPLIT_COMPLETE',
-      segmentNumber: segmentNumber,
-      totalSegments: this.splitSettings.maxFiles
+      segmentNumber,
+      totalSegments: this.splitSettings.maxFiles,
     });
   }
 
@@ -296,7 +295,7 @@ class AutoSplitRecorder {
   notifyRecordingComplete() {
     chrome.runtime.sendMessage({
       type: 'AUTO_SPLIT_COMPLETE',
-      statistics: this.getSplitStatistics()
+      statistics: this.getSplitStatistics(),
     });
   }
 
@@ -304,7 +303,7 @@ class AutoSplitRecorder {
   notifyMaxFilesReached() {
     chrome.runtime.sendMessage({
       type: 'MAX_FILES_REACHED',
-      totalFiles: this.splitSettings.maxFiles
+      totalFiles: this.splitSettings.maxFiles,
     });
   }
 
@@ -312,7 +311,7 @@ class AutoSplitRecorder {
   notifyError(error) {
     chrome.runtime.sendMessage({
       type: 'AUTO_SPLIT_ERROR',
-      error: error.message || 'Unknown auto-split error'
+      error: error.message || 'Unknown auto-split error',
     });
   }
 
@@ -325,7 +324,7 @@ class AutoSplitRecorder {
         splitBy: 'time',
         timeInterval: 15, // 15 minutes
         overlapDuration: 3,
-        maxFiles: 5
+        maxFiles: 5,
       },
       'long-recordings': {
         name: 'Long Recordings',
@@ -333,7 +332,7 @@ class AutoSplitRecorder {
         splitBy: 'time',
         timeInterval: 60, // 1 hour
         overlapDuration: 5,
-        maxFiles: 10
+        maxFiles: 10,
       },
       'size-limited': {
         name: 'Size Limited',
@@ -341,16 +340,16 @@ class AutoSplitRecorder {
         splitBy: 'size',
         sizeLimit: 100, // 100 MB
         overlapDuration: 5,
-        maxFiles: 20
+        maxFiles: 20,
       },
-      'custom': {
+      custom: {
         name: 'Custom',
         description: 'User-defined split settings',
         splitBy: 'time',
         timeInterval: 30,
         overlapDuration: 5,
-        maxFiles: 10
-      }
+        maxFiles: 10,
+      },
     };
   }
 
@@ -358,13 +357,13 @@ class AutoSplitRecorder {
   applyPreset(presetName) {
     const presets = this.getSplitPresets();
     const preset = presets[presetName];
-    
+
     if (preset) {
       this.updateSplitSettings(preset);
       console.log(`Applied preset: ${preset.name}`);
       return true;
     }
-    
+
     return false;
   }
 
@@ -376,7 +375,7 @@ class AutoSplitRecorder {
     this.totalFiles = 0;
     this.recordingStartTime = null;
     this.lastSplitTime = null;
-    
+
     console.log('Auto-split recorder cleaned up');
   }
 }

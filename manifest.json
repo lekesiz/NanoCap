@@ -28,6 +28,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "ffmpeg-wrapper.js",
         "advanced-ffmpeg-processor.js",
         "av1-codec-processor.js",
         "advanced-audio-processor.js",

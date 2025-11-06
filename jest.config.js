@@ -11,7 +11,7 @@ module.exports = {
     '!node_modules/**',
     '!tests/**',
     '!dist/**',
-    '!coverage/**'
+    '!coverage/**',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
@@ -20,12 +20,12 @@ module.exports = {
       branches: 50,
       functions: 50,
       lines: 50,
-      statements: 50
-    }
+      statements: 50,
+    },
   },
   testPathIgnorePatterns: ['/node_modules/'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   transform: {
-    '^.+\\.js$': 'babel-jest'
-  }
+    '^.+\\.js$': 'babel-jest',
+  },
 };

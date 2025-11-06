@@ -26,9 +26,9 @@ class AdvancedFFmpegProcessor {
         maxHeight: 720,
         fps: 15,
         expectedReduction: 0.7, // 70% size reduction
-        processingTime: 'slow'
+        processingTime: 'slow',
       },
-      'presentation': {
+      presentation: {
         name: 'Presentation',
         description: 'Optimized for slides and presentations',
         crf: 38,
@@ -40,9 +40,9 @@ class AdvancedFFmpegProcessor {
         maxHeight: 720,
         fps: 15,
         expectedReduction: 0.6,
-        processingTime: 'fast'
+        processingTime: 'fast',
       },
-      'balanced': {
+      balanced: {
         name: 'Balanced',
         description: 'Good balance of size and quality',
         crf: 35,
@@ -54,7 +54,7 @@ class AdvancedFFmpegProcessor {
         maxHeight: 720,
         fps: 24,
         expectedReduction: 0.5,
-        processingTime: 'medium'
+        processingTime: 'medium',
       },
       'high-quality': {
         name: 'High Quality',
@@ -68,7 +68,7 @@ class AdvancedFFmpegProcessor {
         maxHeight: 1080,
         fps: 30,
         expectedReduction: 0.3,
-        processingTime: 'medium'
+        processingTime: 'medium',
       },
       'av1-ultra': {
         name: 'AV1 Ultra',
@@ -83,8 +83,8 @@ class AdvancedFFmpegProcessor {
         fps: 24,
         expectedReduction: 0.8, // 80% size reduction
         processingTime: 'very-slow',
-        requiresAV1: true
-      }
+        requiresAV1: true,
+      },
     };
   }
 
@@ -100,7 +100,7 @@ class AdvancedFFmpegProcessor {
         log: true,
         corePath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.js',
         wasmPath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.wasm',
-        workerPath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.worker.js'
+        workerPath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.worker.js',
       });
 
       if (!this.ffmpeg.isLoaded()) {
@@ -111,7 +111,6 @@ class AdvancedFFmpegProcessor {
 
       this.isLoaded = true;
       return true;
-
     } catch (error) {
       console.error('Failed to initialize advanced FFmpeg:', error);
       throw error;
@@ -173,11 +172,11 @@ class AdvancedFFmpegProcessor {
       // Store compression history
       this.compressionHistory.push({
         preset: presetName,
-        originalSize: originalSize,
+        originalSize,
         compressedSize: outputBlob.size,
-        compressionRatio: compressionRatio,
-        processingTime: processingTime,
-        timestamp: Date.now()
+        compressionRatio,
+        processingTime,
+        timestamp: Date.now(),
       });
 
       console.log(`Compression completed in ${processingTime}ms`);
@@ -188,15 +187,14 @@ class AdvancedFFmpegProcessor {
 
       return {
         blob: outputBlob,
-        preset: preset,
-        originalSize: originalSize,
+        preset,
+        originalSize,
         compressedSize: outputBlob.size,
-        compressionRatio: compressionRatio,
-        actualReduction: actualReduction,
-        processingTime: processingTime,
-        efficiency: this.calculateEfficiency(preset, actualReduction)
+        compressionRatio,
+        actualReduction,
+        processingTime,
+        efficiency: this.calculateEfficiency(preset, actualReduction),
       };
-
     } catch (error) {
       console.error('Advanced compression failed:', error);
       this.isProcessing = false;
@@ -207,12 +205,18 @@ class AdvancedFFmpegProcessor {
   // Build advanced FFmpeg command
   buildAdvancedCommand(preset, options) {
     const command = [
-      '-i', 'input.webm',
-      '-c:v', preset.videoCodec,
-      '-crf', preset.crf.toString(),
-      '-preset', preset.preset,
-      '-c:a', preset.audioCodec,
-      '-b:a', preset.audioBitrate
+      '-i',
+      'input.webm',
+      '-c:v',
+      preset.videoCodec,
+      '-crf',
+      preset.crf.toString(),
+      '-preset',
+      preset.preset,
+      '-c:a',
+      preset.audioCodec,
+      '-b:a',
+      preset.audioBitrate,
     ];
 
     // Add video scaling if needed
@@ -253,7 +257,7 @@ class AdvancedFFmpegProcessor {
   setupAdvancedProgressMonitoring(preset) {
     if (this.ffmpeg && this.progressCallback) {
       let lastProgress = 0;
-      
+
       this.ffmpeg.setLogger(({ type, message }) => {
         if (type === 'fferr' && message.includes('time=')) {
           const timeMatch = message.match(/time=(\d+):(\d+):(\d+\.\d+)/);
@@ -262,17 +266,18 @@ class AdvancedFFmpegProcessor {
             const minutes = parseInt(timeMatch[2]);
             const seconds = parseFloat(timeMatch[3]);
             const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-            
+
             // Estimate progress based on typical video length
             const estimatedProgress = Math.min((totalSeconds / 60) * 100, 95);
-            
-            if (estimatedProgress > lastProgress + 5) { // Update every 5%
+
+            if (estimatedProgress > lastProgress + 5) {
+              // Update every 5%
               lastProgress = estimatedProgress;
               this.progressCallback({
                 percentage: estimatedProgress,
                 message: `${preset.name}: ${Math.floor(estimatedProgress)}%`,
                 preset: preset.name,
-                estimatedTime: this.estimateRemainingTime(estimatedProgress, preset)
+                estimatedTime: this.estimateRemainingTime(estimatedProgress, preset),
               });
             }
           }
@@ -292,17 +297,17 @@ class AdvancedFFmpegProcessor {
   getPresetBaseTime(preset) {
     const baseTimes = {
       'ultra-compress': 300, // 5 minutes
-      'presentation': 120,   // 2 minutes
-      'balanced': 180,       // 3 minutes
-      'high-quality': 240,   // 4 minutes
-      'av1-ultra': 600      // 10 minutes
+      presentation: 120, // 2 minutes
+      balanced: 180, // 3 minutes
+      'high-quality': 240, // 4 minutes
+      'av1-ultra': 600, // 10 minutes
     };
     return baseTimes[preset.name.toLowerCase().replace(' ', '-')] || 180;
   }
 
   // Calculate compression efficiency
   calculateEfficiency(preset, actualReduction) {
-    const expectedReduction = preset.expectedReduction;
+    const { expectedReduction } = preset;
     const efficiency = (expectedReduction / actualReduction) * 100;
     return Math.min(efficiency, 100); // Cap at 100%
   }
@@ -310,8 +315,10 @@ class AdvancedFFmpegProcessor {
   // Check AV1 support
   isAV1Supported() {
     // Check if AV1 codec is supported
-    return MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.08M.08') ||
-           MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.08M.08');
+    return (
+      MediaRecorder.isTypeSupported('video/webm;codecs=av01.0.08M.08') ||
+      MediaRecorder.isTypeSupported('video/mp4;codecs=av01.0.08M.08')
+    );
   }
 
   // Get compression statistics
@@ -321,41 +328,44 @@ class AdvancedFFmpegProcessor {
     }
 
     const totalCompressions = this.compressionHistory.length;
-    const avgCompressionRatio = this.compressionHistory.reduce((sum, entry) => 
-      sum + entry.compressionRatio, 0) / totalCompressions;
-    const avgProcessingTime = this.compressionHistory.reduce((sum, entry) => 
-      sum + entry.processingTime, 0) / totalCompressions;
+    const avgCompressionRatio =
+      this.compressionHistory.reduce((sum, entry) => sum + entry.compressionRatio, 0) /
+      totalCompressions;
+    const avgProcessingTime =
+      this.compressionHistory.reduce((sum, entry) => sum + entry.processingTime, 0) /
+      totalCompressions;
 
     return {
-      totalCompressions: totalCompressions,
+      totalCompressions,
       averageCompressionRatio: avgCompressionRatio,
       averageProcessingTime: avgProcessingTime,
       mostUsedPreset: this.getMostUsedPreset(),
-      totalSizeSaved: this.compressionHistory.reduce((sum, entry) => 
-        sum + (entry.originalSize - entry.compressedSize), 0)
+      totalSizeSaved: this.compressionHistory.reduce(
+        (sum, entry) => sum + (entry.originalSize - entry.compressedSize),
+        0
+      ),
     };
   }
 
   // Get most used preset
   getMostUsedPreset() {
     const presetCounts = {};
-    this.compressionHistory.forEach(entry => {
+    this.compressionHistory.forEach((entry) => {
       presetCounts[entry.preset] = (presetCounts[entry.preset] || 0) + 1;
     });
 
-    return Object.keys(presetCounts).reduce((a, b) => 
-      presetCounts[a] > presetCounts[b] ? a : b);
+    return Object.keys(presetCounts).reduce((a, b) => (presetCounts[a] > presetCounts[b] ? a : b));
   }
 
   // Get preset recommendations based on content
   getPresetRecommendations(contentType) {
     const recommendations = {
-      'presentation': ['presentation', 'ultra-compress'],
-      'tutorial': ['balanced', 'high-quality'],
-      'gaming': ['high-quality', 'balanced'],
-      'meeting': ['presentation', 'ultra-compress'],
-      'demo': ['balanced', 'presentation'],
-      'music': ['high-quality', 'balanced']
+      presentation: ['presentation', 'ultra-compress'],
+      tutorial: ['balanced', 'high-quality'],
+      gaming: ['high-quality', 'balanced'],
+      meeting: ['presentation', 'ultra-compress'],
+      demo: ['balanced', 'presentation'],
+      music: ['high-quality', 'balanced'],
     };
 
     return recommendations[contentType] || ['balanced', 'presentation'];
@@ -380,7 +390,7 @@ class AdvancedFFmpegProcessor {
   cleanup() {
     this.isProcessing = false;
     this.progressCallback = null;
-    
+
     if (this.ffmpeg && this.ffmpeg.isLoaded()) {
       try {
         this.ffmpeg.exit();
@@ -388,7 +398,7 @@ class AdvancedFFmpegProcessor {
         console.warn('Error exiting FFmpeg:', error);
       }
     }
-    
+
     this.ffmpeg = null;
     this.isLoaded = false;
   }
