@@ -2,9 +2,10 @@
 
 **Tarayıcı içi video + ses kaydı, minimum dosya boyutu ile - Chrome MV3 Uzantısı**
 
-![Version](https://img.shields.io/badge/version-0.3.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Chrome MV3](https://img.shields.io/badge/Chrome%20MV3-Compatible-brightgreen)
+![Status](https://img.shields.io/badge/status-Production%20Ready-success)
 
 ---
 
@@ -114,6 +115,14 @@ NanoCap, Google Chrome için geliştirilmiş, tarayıcı içi aktiviteleri (sekm
 | **Sadece Ses** | 16x9 | 1 | 0 kbps | 128 kbps | 45 MB |
 
 ---
+
+## 🆕 v0.3.1 Güncellemeleri
+
+- 🐛 **Kayıt Sorunu Düzeltildi**: Tab capture stream ID implementasyonu düzeltildi
+- 🎨 **UI İyileştirmeleri**: Popup boyutları ve okunabilirlik artırıldı
+- 📝 **Kayıt Geçmişi**: Son 10 kayıt popup'ta gösteriliyor
+- 🔧 **Mesaj İşleme**: Service worker ve offscreen document arası iletişim düzeltildi
+- 💾 **Storage Yönetimi**: Kayıtlar otomatik olarak takip ediliyor
 
 ## 🏗️ Teknik Mimari
 
