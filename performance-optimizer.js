@@ -7,13 +7,13 @@ class PerformanceOptimizer {
       cpu: { current: 0, average: 0, peak: 0 },
       memory: { current: 0, average: 0, peak: 0 },
       recording: { duration: 0, fileSize: 0, compressionRatio: 0 },
-      system: { cores: 0, memory: 0, browser: '' }
+      system: { cores: 0, memory: 0, browser: '' },
     };
     this.optimizationSettings = {
       adaptiveQuality: true,
       memoryManagement: true,
       cpuThrottling: true,
-      backgroundOptimization: true
+      backgroundOptimization: true,
     };
     this.monitoringInterval = null;
     this.isOptimizing = false;
@@ -24,16 +24,15 @@ class PerformanceOptimizer {
     try {
       // Get system information
       this.metrics.system = await this.getSystemInfo();
-      
+
       // Start performance monitoring
       this.startMonitoring();
-      
+
       // Apply initial optimizations
       await this.applyInitialOptimizations();
-      
+
       console.log('Performance optimizer initialized');
       return true;
-
     } catch (error) {
       console.error('Failed to initialize performance optimizer:', error);
       throw error;
@@ -47,13 +46,13 @@ class PerformanceOptimizer {
       memory: navigator.deviceMemory || 4,
       browser: this.getBrowserInfo(),
       platform: navigator.platform,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
   }
 
   // Get browser information
   getBrowserInfo() {
-    const userAgent = navigator.userAgent;
+    const { userAgent } = navigator;
     if (userAgent.includes('Chrome')) {
       const version = userAgent.match(/Chrome\/(\d+)/);
       return `Chrome ${version ? version[1] : 'Unknown'}`;
@@ -111,11 +110,11 @@ class PerformanceOptimizer {
     const start = performance.now();
     let iterations = 0;
     const maxIterations = 100000;
-    
+
     while (performance.now() - start < 1 && iterations < maxIterations) {
       iterations++;
     }
-    
+
     // Higher iterations = lower CPU usage
     const cpuUsage = Math.max(0, 100 - (iterations / maxIterations) * 100);
     return Math.round(cpuUsage);
@@ -126,14 +125,14 @@ class PerformanceOptimizer {
     if (!this.metrics[metric].history) {
       this.metrics[metric].history = [];
     }
-    
+
     this.metrics[metric].history.push(value);
-    
+
     // Keep only last 60 values (1 minute)
     if (this.metrics[metric].history.length > 60) {
       this.metrics[metric].history.shift();
     }
-    
+
     // Calculate average
     const sum = this.metrics[metric].history.reduce((a, b) => a + b, 0);
     this.metrics[metric].average = sum / this.metrics[metric].history.length;
@@ -156,7 +155,8 @@ class PerformanceOptimizer {
     }
 
     // High memory usage trigger
-    if (this.metrics.memory.current > 500) { // 500MB
+    if (this.metrics.memory.current > 500) {
+      // 500MB
       this.triggerMemoryOptimization();
     }
 
@@ -169,13 +169,13 @@ class PerformanceOptimizer {
   // Trigger CPU optimization
   triggerCPUOptimization() {
     console.log('High CPU usage detected, applying optimizations');
-    
+
     // Reduce recording quality
     this.reduceRecordingQuality();
-    
+
     // Enable CPU throttling
     this.enableCPUThrottling();
-    
+
     // Notify user
     this.notifyOptimization('CPU optimization applied due to high usage');
   }
@@ -183,13 +183,13 @@ class PerformanceOptimizer {
   // Trigger memory optimization
   triggerMemoryOptimization() {
     console.log('High memory usage detected, applying optimizations');
-    
+
     // Clear unnecessary data
     this.clearMemoryCache();
-    
+
     // Reduce buffer sizes
     this.reduceBufferSizes();
-    
+
     // Notify user
     this.notifyOptimization('Memory optimization applied due to high usage');
   }
@@ -197,13 +197,13 @@ class PerformanceOptimizer {
   // Trigger sustained optimization
   triggerSustainedOptimization() {
     console.log('Sustained high usage detected, applying comprehensive optimizations');
-    
+
     // Apply all optimizations
     this.reduceRecordingQuality();
     this.enableCPUThrottling();
     this.clearMemoryCache();
     this.reduceBufferSizes();
-    
+
     // Notify user
     this.notifyOptimization('Comprehensive optimization applied due to sustained high usage');
   }
@@ -215,7 +215,7 @@ class PerformanceOptimizer {
     chrome.runtime.sendMessage({
       type: 'PERFORMANCE_OPTIMIZATION',
       action: 'reduceQuality',
-      reason: 'highCPU'
+      reason: 'highCPU',
     });
   }
 
@@ -223,7 +223,7 @@ class PerformanceOptimizer {
   enableCPUThrottling() {
     // Implement CPU throttling mechanisms
     this.optimizationSettings.cpuThrottling = true;
-    
+
     // Reduce processing frequency
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
@@ -243,7 +243,7 @@ class PerformanceOptimizer {
     if (this.metrics.memory.history) {
       this.metrics.memory.history = this.metrics.memory.history.slice(-30);
     }
-    
+
     // Force garbage collection if available
     if (window.gc) {
       window.gc();
@@ -257,24 +257,24 @@ class PerformanceOptimizer {
     chrome.runtime.sendMessage({
       type: 'PERFORMANCE_OPTIMIZATION',
       action: 'reduceBuffers',
-      reason: 'highMemory'
+      reason: 'highMemory',
     });
   }
 
   // Apply initial optimizations
   async applyInitialOptimizations() {
     const systemInfo = this.metrics.system;
-    
+
     // Low-end system optimizations
     if (systemInfo.cores < 4 || systemInfo.memory < 8) {
       this.optimizeForLowEndSystem();
     }
-    
+
     // High-end system optimizations
     if (systemInfo.cores >= 8 && systemInfo.memory >= 16) {
       this.optimizeForHighEndSystem();
     }
-    
+
     // Browser-specific optimizations
     this.applyBrowserOptimizations();
   }
@@ -282,39 +282,39 @@ class PerformanceOptimizer {
   // Optimize for low-end systems
   optimizeForLowEndSystem() {
     console.log('Optimizing for low-end system');
-    
+
     this.optimizationSettings.adaptiveQuality = true;
     this.optimizationSettings.memoryManagement = true;
     this.optimizationSettings.cpuThrottling = true;
-    
+
     // Reduce default quality
     chrome.runtime.sendMessage({
       type: 'PERFORMANCE_OPTIMIZATION',
       action: 'setDefaultQuality',
-      quality: 'ultra-low'
+      quality: 'ultra-low',
     });
   }
 
   // Optimize for high-end systems
   optimizeForHighEndSystem() {
     console.log('Optimizing for high-end system');
-    
+
     this.optimizationSettings.adaptiveQuality = false;
     this.optimizationSettings.memoryManagement = false;
     this.optimizationSettings.cpuThrottling = false;
-    
+
     // Enable high quality by default
     chrome.runtime.sendMessage({
       type: 'PERFORMANCE_OPTIMIZATION',
       action: 'setDefaultQuality',
-      quality: 'high'
+      quality: 'high',
     });
   }
 
   // Apply browser-specific optimizations
   applyBrowserOptimizations() {
-    const browser = this.metrics.system.browser;
-    
+    const { browser } = this.metrics.system;
+
     if (browser.includes('Chrome')) {
       // Chrome-specific optimizations
       this.enableChromeOptimizations();
@@ -353,7 +353,7 @@ class PerformanceOptimizer {
     chrome.runtime.sendMessage({
       type: 'PERFORMANCE_METRICS',
       metrics: this.metrics,
-      settings: this.optimizationSettings
+      settings: this.optimizationSettings,
     });
   }
 
@@ -361,39 +361,39 @@ class PerformanceOptimizer {
   notifyOptimization(message) {
     chrome.runtime.sendMessage({
       type: 'PERFORMANCE_NOTIFICATION',
-      message: message,
-      metrics: this.metrics
+      message,
+      metrics: this.metrics,
     });
   }
 
   // Get performance recommendations
   getPerformanceRecommendations() {
     const recommendations = [];
-    
+
     if (this.metrics.cpu.average > 70) {
       recommendations.push({
         type: 'cpu',
         message: 'High CPU usage detected. Consider reducing recording quality.',
-        action: 'reduceQuality'
+        action: 'reduceQuality',
       });
     }
-    
+
     if (this.metrics.memory.average > 400) {
       recommendations.push({
         type: 'memory',
         message: 'High memory usage detected. Consider closing other applications.',
-        action: 'freeMemory'
+        action: 'freeMemory',
       });
     }
-    
+
     if (this.metrics.cpu.peak > 90) {
       recommendations.push({
         type: 'peak',
         message: 'Peak CPU usage very high. System may become unresponsive.',
-        action: 'emergencyOptimization'
+        action: 'emergencyOptimization',
       });
     }
-    
+
     return recommendations;
   }
 
@@ -404,7 +404,7 @@ class PerformanceOptimizer {
       settings: this.optimizationSettings,
       recommendations: this.getPerformanceRecommendations(),
       systemInfo: this.metrics.system,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 

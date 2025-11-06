@@ -26,10 +26,10 @@ let isRecording = false;
 let recordingStartTime = null;
 
 // Advanced features integration
-let advancedFFmpegProcessor = null;
-let av1CodecProcessor = null;
-let advancedAudioProcessor = null;
-let audioLevelInterval = null;
+const advancedFFmpegProcessor = null;
+const av1CodecProcessor = null;
+const advancedAudioProcessor = null;
+const audioLevelInterval = null;
 let timerInterval = null;
 
 // Quality presets with file size estimates
@@ -37,43 +37,43 @@ const qualityPresets = {
   'ultra-low': {
     name: 'Ultra Düşük',
     videoBitsPerSecond: 500000, // 500 kbps
-    audioBitsPerSecond: 32000,  // 32 kbps
+    audioBitsPerSecond: 32000, // 32 kbps
     sizePerMinute: '1-2 MB',
     compression: 'VP9 + Opus (CRF 35)',
     cpuUsage: '~5-8%',
     maxWidth: 1280,
-    maxFps: 15
+    maxFps: 15,
   },
-  'low': {
+  low: {
     name: 'Düşük',
     videoBitsPerSecond: 1000000, // 1 Mbps
-    audioBitsPerSecond: 64000,   // 64 kbps
+    audioBitsPerSecond: 64000, // 64 kbps
     sizePerMinute: '2-4 MB',
     compression: 'VP9 + Opus (CRF 30)',
     cpuUsage: '~8-12%',
     maxWidth: 1280,
-    maxFps: 20
+    maxFps: 20,
   },
-  'balanced': {
+  balanced: {
     name: 'Dengeli',
     videoBitsPerSecond: 2000000, // 2 Mbps
-    audioBitsPerSecond: 128000,  // 128 kbps
+    audioBitsPerSecond: 128000, // 128 kbps
     sizePerMinute: '4-8 MB',
     compression: 'VP9 + Opus (CRF 25)',
     cpuUsage: '~10-15%',
     maxWidth: 1280,
-    maxFps: 24
+    maxFps: 24,
   },
-  'high': {
+  high: {
     name: 'Yüksek',
     videoBitsPerSecond: 4000000, // 4 Mbps
-    audioBitsPerSecond: 192000,  // 192 kbps
+    audioBitsPerSecond: 192000, // 192 kbps
     sizePerMinute: '8-15 MB',
     compression: 'VP9 + Opus (CRF 20)',
     cpuUsage: '~15-25%',
     maxWidth: 1920,
-    maxFps: 30
-  }
+    maxFps: 30,
+  },
 };
 
 // Initialize advanced features
@@ -85,19 +85,19 @@ async function initializeAdvancedFeatures() {
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('Popup DOM loaded');
-  
+
   // Initialize advanced features
   await initializeAdvancedFeatures();
-  
+
   // Load saved settings
   loadSettings();
-  
+
   // Update UI based on current state
   updateRecordingState();
-  
+
   // Setup event listeners
   setupEventListeners();
-  
+
   // Update quality info
   updateQualityInfo();
 });
@@ -106,35 +106,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
   startBtn.addEventListener('click', startRecording);
   stopBtn.addEventListener('click', stopRecording);
-  
+
   qualitySelect.addEventListener('change', updateQualityInfo);
   audioToggle.addEventListener('change', updateQualityInfo);
   videoToggle.addEventListener('change', updateQualityInfo);
   ffmpegToggle.addEventListener('change', updateQualityInfo);
   mirrorToggle.addEventListener('change', updateQualityInfo);
-  
+
   // Advanced features event listeners
   const micMixToggle = document.getElementById('mic-mix-toggle');
   const micVolume = document.getElementById('mic-volume');
   const tabVolume = document.getElementById('tab-volume');
   const noiseReductionToggle = document.getElementById('noise-reduction-toggle');
-  
+
   if (micMixToggle) {
     micMixToggle.addEventListener('change', handleMicMixToggle);
   }
-  
+
   if (micVolume) {
     micVolume.addEventListener('input', handleMicVolumeChange);
   }
-  
+
   if (tabVolume) {
     tabVolume.addEventListener('input', handleTabVolumeChange);
   }
-  
+
   if (noiseReductionToggle) {
     noiseReductionToggle.addEventListener('change', handleNoiseReductionToggle);
   }
-  
+
   // Settings and help links
   document.getElementById('settings-link').addEventListener('click', openSettings);
   document.getElementById('help-link').addEventListener('click', openHelp);
@@ -145,30 +145,29 @@ function setupEventListeners() {
 async function startRecording() {
   try {
     console.log('Starting recording...');
-    
+
     const settings = getRecordingSettings();
-    
+
     // Send start command to service worker
     const response = await chrome.runtime.sendMessage({
       type: 'START_RECORDING',
-      data: settings
+      data: settings,
     });
-    
+
     if (response && response.success) {
       isRecording = true;
       recordingStartTime = Date.now();
-      
+
       updateRecordingState();
       startTimer();
-      
+
       console.log('Recording started successfully');
     } else {
       throw new Error('Failed to start recording');
     }
-    
   } catch (error) {
     console.error('Error starting recording:', error);
-    showError('Kayıt başlatılamadı: ' + error.message);
+    showError(`Kayıt başlatılamadı: ${error.message}`);
   }
 }
 
@@ -176,23 +175,22 @@ async function startRecording() {
 async function stopRecording() {
   try {
     console.log('Stopping recording...');
-    
+
     // Send stop command to service worker
     await chrome.runtime.sendMessage({
-      type: 'STOP_RECORDING'
+      type: 'STOP_RECORDING',
     });
-    
+
     isRecording = false;
     recordingStartTime = null;
-    
+
     updateRecordingState();
     stopTimer();
-    
+
     console.log('Recording stopped');
-    
   } catch (error) {
     console.error('Error stopping recording:', error);
-    showError('Kayıt durdurulamadı: ' + error.message);
+    showError(`Kayıt durdurulamadı: ${error.message}`);
   }
 }
 
@@ -200,9 +198,9 @@ async function stopRecording() {
 function getRecordingSettings() {
   const quality = qualitySelect.value;
   const preset = qualityPresets[quality];
-  
+
   return {
-    quality: quality,
+    quality,
     audio: audioToggle.checked,
     video: videoToggle.checked,
     useFFmpeg: ffmpegToggle.checked,
@@ -211,7 +209,7 @@ function getRecordingSettings() {
     audioBitsPerSecond: preset.audioBitsPerSecond,
     maxWidth: preset.maxWidth,
     maxFps: preset.maxFps,
-    mimeType: 'video/webm;codecs=vp9,opus'
+    mimeType: 'video/webm;codecs=vp9,opus',
   };
 }
 
@@ -237,9 +235,8 @@ function startTimer() {
       const elapsed = Date.now() - recordingStartTime;
       const minutes = Math.floor(elapsed / 60000);
       const seconds = Math.floor((elapsed % 60000) / 1000);
-      
-      recordingTimer.textContent = 
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      recordingTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       recordingTimer.classList.remove('hidden');
     }
   }, 1000);
@@ -258,11 +255,11 @@ function stopTimer() {
 function updateQualityInfo() {
   const quality = qualitySelect.value;
   const preset = qualityPresets[quality];
-  
+
   sizeEstimate.textContent = preset.sizePerMinute;
   compressionRatio.textContent = preset.compression;
   cpuEstimate.textContent = preset.cpuUsage;
-  
+
   // Save settings
   saveSettings();
 }
@@ -270,18 +267,15 @@ function updateQualityInfo() {
 // Load saved settings
 async function loadSettings() {
   try {
-    const result = await chrome.storage.sync.get([
-      'quality', 'audio', 'video', 'ffmpeg', 'mirror'
-    ]);
-    
+    const result = await chrome.storage.sync.get(['quality', 'audio', 'video', 'ffmpeg', 'mirror']);
+
     if (result.quality) qualitySelect.value = result.quality;
     if (result.audio !== undefined) audioToggle.checked = result.audio;
     if (result.video !== undefined) videoToggle.checked = result.video;
     if (result.ffmpeg !== undefined) ffmpegToggle.checked = result.ffmpeg;
     if (result.mirror !== undefined) mirrorToggle.checked = result.mirror;
-    
+
     updateQualityInfo();
-    
   } catch (error) {
     console.error('Error loading settings:', error);
   }
@@ -295,7 +289,7 @@ async function saveSettings() {
       audio: audioToggle.checked,
       video: videoToggle.checked,
       ffmpeg: ffmpegToggle.checked,
-      mirror: mirrorToggle.checked
+      mirror: mirrorToggle.checked,
     });
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -305,15 +299,15 @@ async function saveSettings() {
 // Show error message with enhanced UI
 function showError(message) {
   console.error('Error:', message);
-  
+
   // Update status to show error
   recordingStatus.querySelector('.status-text').textContent = 'Hata';
   recordingStatus.querySelector('.status-dot').classList.add('error');
-  
+
   // Show error in progress text
   progressText.textContent = `Hata: ${message}`;
   progressContainer.classList.remove('hidden');
-  
+
   // Reset after 5 seconds
   setTimeout(() => {
     recordingStatus.querySelector('.status-text').textContent = 'Hazır';
@@ -325,10 +319,10 @@ function showError(message) {
 // Show success message
 function showSuccess(message) {
   console.log('Success:', message);
-  
+
   recordingStatus.querySelector('.status-text').textContent = 'Başarılı';
   recordingStatus.querySelector('.status-dot').classList.add('success');
-  
+
   setTimeout(() => {
     recordingStatus.querySelector('.status-text').textContent = 'Hazır';
     recordingStatus.querySelector('.status-dot').classList.remove('success');
@@ -350,28 +344,28 @@ function hideProgress() {
 // Open settings page
 function openSettings() {
   chrome.tabs.create({
-    url: chrome.runtime.getURL('settings.html')
+    url: chrome.runtime.getURL('settings.html'),
   });
 }
 
 // Open help page
 function openHelp() {
   chrome.tabs.create({
-    url: 'https://github.com/lekesiz/NanoCap#readme'
+    url: 'https://github.com/lekesiz/NanoCap#readme',
   });
 }
 
 // Open GitHub repository
 function openGitHub() {
   chrome.tabs.create({
-    url: 'https://github.com/lekesiz/NanoCap'
+    url: 'https://github.com/lekesiz/NanoCap',
   });
 }
 
 // Listen for messages from service worker
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Popup received message:', message.type);
-  
+
   switch (message.type) {
     case 'RECORDING_STARTED':
       isRecording = true;
@@ -380,7 +374,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       startTimer();
       showSuccess('Kayıt başlatıldı');
       break;
-      
+
     case 'RECORDING_STOPPED':
       isRecording = false;
       recordingStartTime = null;
@@ -388,25 +382,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       stopTimer();
       showSuccess('Kayıt durduruldu');
       break;
-      
+
     case 'RECORDING_ERROR':
       showError(message.error);
       break;
-      
+
     case 'DOWNLOAD_READY':
       console.log('Download ready:', message.filename);
       showSuccess('Dosya indirildi');
       hideProgress();
       break;
-      
+
     case 'PROCESSING_STARTED':
       showProgress(0, 'İşleniyor...');
       break;
-      
+
     case 'PROCESSING_PROGRESS':
       showProgress(message.percentage, message.text);
       break;
-      
+
     case 'PROCESSING_COMPLETED':
       hideProgress();
       showSuccess('İşlem tamamlandı');

@@ -22,7 +22,7 @@ class FFmpegProcessor {
       this.ffmpeg = FFmpeg.createFFmpeg({
         log: true,
         corePath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.js',
-        wasmPath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.wasm'
+        wasmPath: 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/ffmpeg-core.wasm',
       });
 
       // Load FFmpeg
@@ -34,7 +34,6 @@ class FFmpegProcessor {
 
       this.isLoaded = true;
       return true;
-
     } catch (error) {
       console.error('Failed to initialize FFmpeg.wasm:', error);
       throw error;
@@ -53,7 +52,7 @@ class FFmpegProcessor {
 
       // Default compression options
       const compressionOptions = {
-        crf: options.crf || 35,           // Constant Rate Factor
+        crf: options.crf || 35, // Constant Rate Factor
         preset: options.preset || 'fast', // Encoding speed preset
         videoCodec: options.videoCodec || 'libvp9',
         audioCodec: options.audioCodec || 'libopus',
@@ -61,7 +60,7 @@ class FFmpegProcessor {
         maxWidth: options.maxWidth || 1280,
         maxHeight: options.maxHeight || 720,
         fps: options.fps || 24,
-        ...options
+        ...options,
       };
 
       console.log('Starting FFmpeg processing with options:', compressionOptions);
@@ -104,10 +103,9 @@ class FFmpegProcessor {
         blob: outputBlob,
         originalSize: inputBlob.size,
         compressedSize: outputBlob.size,
-        compressionRatio: compressionRatio,
-        processingTime: processingTime
+        compressionRatio,
+        processingTime,
       };
-
     } catch (error) {
       console.error('FFmpeg processing failed:', error);
       this.isProcessing = false;
@@ -118,16 +116,25 @@ class FFmpegProcessor {
   // Build FFmpeg command based on options
   buildFFmpegCommand(options) {
     const command = [
-      '-i', 'input.webm',
-      '-c:v', options.videoCodec,
-      '-crf', options.crf.toString(),
-      '-preset', options.preset,
-      '-c:a', options.audioCodec,
-      '-b:a', options.audioBitrate,
-      '-vf', `scale=${options.maxWidth}:${options.maxHeight}`,
-      '-r', options.fps.toString(),
-      '-movflags', '+faststart', // Optimize for streaming
-      'output.webm'
+      '-i',
+      'input.webm',
+      '-c:v',
+      options.videoCodec,
+      '-crf',
+      options.crf.toString(),
+      '-preset',
+      options.preset,
+      '-c:a',
+      options.audioCodec,
+      '-b:a',
+      options.audioBitrate,
+      '-vf',
+      `scale=${options.maxWidth}:${options.maxHeight}`,
+      '-r',
+      options.fps.toString(),
+      '-movflags',
+      '+faststart', // Optimize for streaming
+      'output.webm',
     ];
 
     // Add specific codec options
@@ -153,13 +160,13 @@ class FFmpegProcessor {
             const minutes = parseInt(timeMatch[2]);
             const seconds = parseFloat(timeMatch[3]);
             const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-            
+
             // Estimate progress (this is approximate)
             const estimatedProgress = Math.min(totalSeconds / 60, 1) * 100; // Assume 1 minute video
-            
+
             this.progressCallback({
               percentage: estimatedProgress,
-              message: `Processing... ${Math.floor(estimatedProgress)}%`
+              message: `Processing... ${Math.floor(estimatedProgress)}%`,
             });
           }
         }
@@ -191,15 +198,15 @@ class FFmpegProcessor {
         videoCodec: 'libvp9',
         audioCodec: 'libopus',
         audioBitrate: '32k',
-        description: 'Maximum compression, lower quality'
+        description: 'Maximum compression, lower quality',
       },
-      'balanced': {
+      balanced: {
         crf: 35,
         preset: 'fast',
         videoCodec: 'libvp9',
         audioCodec: 'libopus',
         audioBitrate: '64k',
-        description: 'Good balance of size and quality'
+        description: 'Good balance of size and quality',
       },
       'high-quality': {
         crf: 30,
@@ -207,9 +214,9 @@ class FFmpegProcessor {
         videoCodec: 'libvp9',
         audioCodec: 'libopus',
         audioBitrate: '96k',
-        description: 'Higher quality, larger file'
+        description: 'Higher quality, larger file',
       },
-      'presentation': {
+      presentation: {
         crf: 38,
         preset: 'fast',
         videoCodec: 'libvp9',
@@ -218,16 +225,18 @@ class FFmpegProcessor {
         maxWidth: 1280,
         maxHeight: 720,
         fps: 15,
-        description: 'Optimized for presentations'
-      }
+        description: 'Optimized for presentations',
+      },
     };
   }
 
   // Check if FFmpeg.wasm is supported
   static isSupported() {
-    return typeof FFmpeg !== 'undefined' && 
-           typeof WebAssembly !== 'undefined' &&
-           typeof SharedArrayBuffer !== 'undefined';
+    return (
+      typeof FFmpeg !== 'undefined' &&
+      typeof WebAssembly !== 'undefined' &&
+      typeof SharedArrayBuffer !== 'undefined'
+    );
   }
 
   // Get system requirements
@@ -236,11 +245,7 @@ class FFmpegProcessor {
       browser: 'Chrome 88+, Firefox 89+, Safari 15+',
       memory: 'Minimum 2GB RAM recommended',
       cpu: 'Multi-core processor recommended',
-      features: [
-        'WebAssembly support',
-        'SharedArrayBuffer support',
-        'FFmpeg.wasm library'
-      ]
+      features: ['WebAssembly support', 'SharedArrayBuffer support', 'FFmpeg.wasm library'],
     };
   }
 
@@ -248,7 +253,7 @@ class FFmpegProcessor {
   cleanup() {
     this.isProcessing = false;
     this.progressCallback = null;
-    
+
     if (this.ffmpeg && this.ffmpeg.isLoaded()) {
       try {
         this.ffmpeg.exit();
@@ -256,7 +261,7 @@ class FFmpegProcessor {
         console.warn('Error exiting FFmpeg:', error);
       }
     }
-    
+
     this.ffmpeg = null;
     this.isLoaded = false;
   }

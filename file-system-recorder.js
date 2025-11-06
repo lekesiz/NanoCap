@@ -27,21 +27,20 @@ class FileSystemRecorder {
           {
             description: 'WebM Video Files',
             accept: {
-              'video/webm': ['.webm']
-            }
+              'video/webm': ['.webm'],
+            },
           },
           {
             description: 'MP4 Video Files',
             accept: {
-              'video/mp4': ['.mp4']
-            }
-          }
-        ]
+              'video/mp4': ['.mp4'],
+            },
+          },
+        ],
       });
 
       console.log('File handle obtained:', this.fileHandle.name);
       return true;
-
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('User cancelled file selection');
@@ -69,9 +68,9 @@ class FileSystemRecorder {
       // Configure MediaRecorder for streaming
       const mimeType = this.selectMimeType();
       const recorder = new MediaRecorder(stream, {
-        mimeType: mimeType,
+        mimeType,
         videoBitsPerSecond: options.videoBitsPerSecond,
-        audioBitsPerSecond: options.audioBitsPerSecond
+        audioBitsPerSecond: options.audioBitsPerSecond,
       });
 
       // Handle data chunks - write directly to file
@@ -81,10 +80,9 @@ class FileSystemRecorder {
             await this.writeChunk(event.data);
             this.chunkCount++;
             this.totalSize += event.data.size;
-            
+
             // Update progress
             this.updateProgress();
-            
           } catch (error) {
             console.error('Failed to write chunk:', error);
             this.handleError(error);
@@ -114,7 +112,6 @@ class FileSystemRecorder {
       console.log('Streaming recording started');
 
       return recorder;
-
     } catch (error) {
       console.error('Failed to start streaming recording:', error);
       throw error;
@@ -143,14 +140,14 @@ class FileSystemRecorder {
     chrome.runtime.sendMessage({
       type: 'STREAMING_PROGRESS',
       data: {
-        duration: duration,
+        duration,
         durationFormatted: this.formatDuration(duration),
         chunkCount: this.chunkCount,
         totalSize: this.totalSize,
-        sizeMB: sizeMB,
-        avgBitrate: avgBitrate,
-        fileName: this.fileHandle?.name || 'Unknown'
-      }
+        sizeMB,
+        avgBitrate,
+        fileName: this.fileHandle?.name || 'Unknown',
+      },
     });
   }
 
@@ -170,8 +167,8 @@ class FileSystemRecorder {
         fileName: this.fileHandle?.name,
         totalSize: this.totalSize,
         duration: Date.now() - this.startTime,
-        chunkCount: this.chunkCount
-      }
+        chunkCount: this.chunkCount,
+      },
     });
   }
 
@@ -182,7 +179,7 @@ class FileSystemRecorder {
       'video/webm;codecs=vp8,opus',
       'video/webm',
       'video/mp4;codecs="avc1.42E01E,mp4a.40.2"',
-      'video/mp4'
+      'video/mp4',
     ];
 
     for (const type of candidates) {
@@ -210,10 +207,10 @@ class FileSystemRecorder {
   // Handle errors
   handleError(error) {
     console.error('FileSystemRecorder error:', error);
-    
+
     chrome.runtime.sendMessage({
       type: 'STREAMING_ERROR',
-      error: error.message || 'Unknown streaming error'
+      error: error.message || 'Unknown streaming error',
     });
 
     // Cleanup on error
@@ -223,7 +220,7 @@ class FileSystemRecorder {
   // Cleanup resources
   async cleanup() {
     this.isRecording = false;
-    
+
     if (this.writableStream) {
       try {
         await this.writableStream.close();
@@ -246,7 +243,7 @@ class FileSystemRecorder {
       fileName: this.fileHandle?.name,
       chunkCount: this.chunkCount,
       totalSize: this.totalSize,
-      duration: this.startTime ? Date.now() - this.startTime : 0
+      duration: this.startTime ? Date.now() - this.startTime : 0,
     };
   }
 }
